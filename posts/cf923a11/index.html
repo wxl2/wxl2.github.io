@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/1.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.allhw.top","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="暴力法–bf算法算法思想:将目标串S的第一个字符与模式串T的第一个字符进行匹配，若相等，则继续比较S的第二个字符和 T的第二个字符；若不相等，则比较S的第二个字符和T的第一个字符，依次比较下去，直到得出最后的匹配结果。设模式串长度为n,目标串长度为m,bf算法的时间复杂度最好为O(n),最差为O(m*n)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="字符串匹配算法">
+<meta property="og:url" content="https://www.allhw.top/posts/cf923a11/index.html">
+<meta property="og:site_name" content="allhw&#39;s blog">
+<meta property="og:description" content="暴力法–bf算法算法思想:将目标串S的第一个字符与模式串T的第一个字符进行匹配，若相等，则继续比较S的第二个字符和 T的第二个字符；若不相等，则比较S的第二个字符和T的第一个字符，依次比较下去，直到得出最后的匹配结果。设模式串长度为n,目标串长度为m,bf算法的时间复杂度最好为O(n),最差为O(m*n)">
+<meta property="og:locale">
+<meta property="og:image" content="https://www.allhw.top/images/bf.png">
+<meta property="og:image" content="https://www.allhw.top/images/kmp.png">
+<meta property="og:image" content="https://www.allhw.top/images/bm1.jpg">
+<meta property="article:published_time" content="2020-04-07T09:37:56.000Z">
+<meta property="article:modified_time" content="2020-09-19T10:38:25.217Z">
+<meta property="article:author" content="allhw">
+<meta property="article:tag" content="Cpp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.allhw.top/images/bf.png">
+
+<link rel="canonical" href="https://www.allhw.top/posts/cf923a11/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>字符串匹配算法 | allhw's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">allhw's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Learning log of salted fish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://www.allhw.top/posts/cf923a11/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.jpg">
+      <meta itemprop="name" content="allhw">
+      <meta itemprop="description" content="logs for me">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="allhw's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          字符串匹配算法
+        </h1>
+
+        <div class="post-meta">
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-07 17:37:56" itemprop="dateCreated datePublished" datetime="2020-04-07T17:37:56+08:00">2020-04-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-09-19 18:38:25" itemprop="dateModified" datetime="2020-09-19T18:38:25+08:00">2020-09-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>4.1k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="暴力法–bf算法"><a href="#暴力法–bf算法" class="headerlink" title="暴力法–bf算法"></a>暴力法–bf算法</h3><p>算法思想:将目标串S的第一个字符与模式串T的第一个字符进行匹配，若相等，则继续比较S的第二个字符和 T的第二个字符；若不相等，则比较S的第二个字符和T的第一个字符，依次比较下去，直到得出最后的匹配结果。设模式串长度为n,目标串长度为m,bf算法的时间复杂度最好为O(n),最差为O(m*n)</p>
+<a id="more"></a>
+
+<h4 id="伪码"><a href="#伪码" class="headerlink" title="伪码"></a>伪码</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1 . 在串 S 和串 T 中设比较的起始下标 i 和 j;</span><br><span class="line">2 . 循环直到 S 中所剩字符个数小于 T 的长度或 T 的所有字符均比较完</span><br><span class="line">    2 .1 如果 S[i] = T [j] ,则继续比较 S 和 T 的下一个字符 ; 否则</span><br><span class="line">    2 .2 将 i 和 j 回溯 ,准备下一趟比较 ;</span><br><span class="line">3 . 如果 T 中所有字符均比较完 , 则匹配成功 , 返回匹配的起始比较下标 ;</span><br><span class="line">否则 ,匹配失败 ,返回 0;</span><br></pre></td></tr></table></figure>
+
+<h4 id="C代码"><a href="#C代码" class="headerlink" title="C代码"></a>C代码</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bf</span><span class="params">(<span class="keyword">char</span> *str1,<span class="keyword">char</span> *str2)</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//str1为模式串，str2为目标串，返回模式串在目标串中开始的位置</span></span><br><span class="line">    <span class="keyword">int</span> i=<span class="number">0</span>,j=<span class="number">0</span>;<span class="comment">//i为模式串下标，j为目标串下标</span></span><br><span class="line">    <span class="keyword">while</span> (i&lt;<span class="built_in">strlen</span>(str1)&amp;&amp;j&lt;<span class="built_in">strlen</span>(str2))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(str1[i]==str2[j]) </span><br><span class="line">        &#123;<span class="comment">//如果两个串的字符相等则同时后移</span></span><br><span class="line">            i++;</span><br><span class="line">            j++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">        &#123;<span class="comment">//如果没有，则str1回到开始，str2往后移一位</span></span><br><span class="line">            j=j-i+<span class="number">1</span>;</span><br><span class="line">            i=<span class="number">0</span>;</span><br><span class="line">        &#125;     </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(i==<span class="built_in">strlen</span>(str1))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//如果i等与str1的长度，则有匹配的字符串，跳出循环,返回子串起始位置</span></span><br><span class="line">        <span class="keyword">return</span> (j-i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//例如:目标串S=″aaaaaaaaaaab″,模式串为&quot;aaab&quot;，使用示例:./app aaaab aaaaaaaaaab</span></span><br><span class="line">    <span class="keyword">if</span>(argc!=<span class="number">3</span>)</span><br><span class="line">    &#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;Usage %s str1,str2&quot;</span>,argv[<span class="number">0</span>]);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;  </span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">int</span> i=bf(argv[<span class="number">1</span>],argv[<span class="number">2</span>]);</span><br><span class="line">    <span class="keyword">if</span>(i&gt;<span class="number">0</span>)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,i);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="执行示例"><a href="#执行示例" class="headerlink" title="执行示例"></a>执行示例</h4><p><img src="/images/bf.png" alt="bf"> </p>
+<h3 id="贪心法–KMP算法"><a href="#贪心法–KMP算法" class="headerlink" title="贪心法–KMP算法"></a>贪心法–KMP算法</h3><p>算法思想:设计一个next数组来进行回溯，一旦字符发生不匹配，便按照next数组进行回溯，减少无用的比较.设模式串长度为n,目标串长度为m,KMP算法的时间复杂度为O(n+m).</p>
+<h4 id="伪码-1"><a href="#伪码-1" class="headerlink" title="伪码:"></a>伪码:</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1 . 在串 S 和串 T 中分别设比较的起始下标 i 和 j;</span><br><span class="line">2 . 循环直到 S 中所剩字符长度小于 T 的长度或 T 中所有字符均比较完毕</span><br><span class="line">    2 .1 如果 S[i] = T [j] ,则继续比较 S 和 T 的下一个字符 ; 否则</span><br><span class="line">    2 .2 将 j 向右滑动到 next[ j] 位置 ,即 j = next[j] ;</span><br><span class="line">    2 .3 如果 j = -1 ,则将 i 和 j 分别加 1 ,准备下一趟比较;</span><br><span class="line">3 . 如果 T 中所有字符均比较完毕 , 则返回匹配的起始下标 ,否则返回 -1;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Next数组求法"><a href="#Next数组求法" class="headerlink" title="Next数组求法"></a>Next数组求法</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getNext</span><span class="params">(<span class="built_in">string</span> P, <span class="keyword">int</span> next[])</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//abcdabd 的next数组:-1 0 0 0 0 1 2   next数组解决的主要是模式串中存在一定长度的相同字符串的情况下节省比较次数</span></span><br><span class="line">     <span class="keyword">int</span> j=<span class="number">0</span>,t=<span class="number">-1</span>;</span><br><span class="line">    next[<span class="number">0</span>]=<span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">while</span>(j&lt;P.length())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(t==<span class="number">-1</span>||P[j]==P[t])</span><br><span class="line">        &#123;</span><br><span class="line">            j++;t++;</span><br><span class="line">            next[j]=t;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        t=next[t];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Next数组升级版"><a href="#Next数组升级版" class="headerlink" title="Next数组升级版"></a>Next数组升级版</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">GetNextval</span><span class="params">(<span class="built_in">string</span> p, <span class="keyword">int</span> next[])</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> pLen = p.length();  </span><br><span class="line">    next[<span class="number">0</span>] = <span class="number">-1</span>;  </span><br><span class="line">    <span class="keyword">int</span> k = <span class="number">-1</span>;  </span><br><span class="line">    <span class="keyword">int</span> j = <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">while</span> (j &lt; pLen)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="comment">//p[k]表示前缀，p[j]表示后缀    </span></span><br><span class="line">        <span class="keyword">if</span> (k == <span class="number">-1</span> || p[j] == p[k])  </span><br><span class="line">        &#123;  </span><br><span class="line">            ++j;  </span><br><span class="line">            ++k;  </span><br><span class="line">            <span class="comment">//较之前next数组求法，改动在下面4行  </span></span><br><span class="line">            <span class="keyword">if</span> (p[j] != p[k])  </span><br><span class="line">                next[j] = k;   <span class="comment">//之前只有这一行  </span></span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                <span class="comment">//因为不能出现p[j] = p[ next[j ]]，所以当出现时需要继续递归，k = next[k] = next[next[k]]  </span></span><br><span class="line">                next[j] = next[k];  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="keyword">else</span>  </span><br><span class="line">        &#123;  </span><br><span class="line">            k = next[k];  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h4 id="完整算法"><a href="#完整算法" class="headerlink" title="完整算法"></a>完整算法</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getNext</span><span class="params">(<span class="built_in">string</span> P, <span class="keyword">int</span> next[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">     <span class="keyword">int</span> j=<span class="number">0</span>,t=<span class="number">-1</span>;</span><br><span class="line">    next[<span class="number">0</span>]=<span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">while</span>(j&lt;P.length())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(t==<span class="number">-1</span>||P[j]==P[t])</span><br><span class="line">        &#123;</span><br><span class="line">            j++;t++;</span><br><span class="line">            next[j]=t;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        t=next[t];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">KMP</span><span class="params">(<span class="built_in">string</span> S, <span class="built_in">string</span> P, <span class="keyword">int</span> next[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    getNext(P, next);</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;  <span class="comment">// S 的下标</span></span><br><span class="line">    <span class="keyword">int</span> j = <span class="number">0</span>;  <span class="comment">// P 的下标</span></span><br><span class="line">    <span class="keyword">int</span> s_len = S.size();</span><br><span class="line">    <span class="keyword">int</span> p_len = P.size();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (i &lt; s_len &amp;&amp; j &lt; p_len)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (j == <span class="number">-1</span> || S[i] == P[j])  <span class="comment">// P 的第一个字符不匹配或 S[i] == P[j]</span></span><br><span class="line">        &#123;</span><br><span class="line">            i++;</span><br><span class="line">            j++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            j = next[j];  <span class="comment">// 当前字符匹配失败，进行跳转</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (j == p_len)  <span class="comment">// 匹配成功</span></span><br><span class="line">        <span class="keyword">return</span> i - j;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> next[<span class="number">100</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; KMP(<span class="string">&quot;bbc abcdab abcdabcdabde&quot;</span>, <span class="string">&quot;abcdabd&quot;</span>, next) &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 15　next数组:-1 0 0 0 0 1 2 </span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用代码进行调试，可以观察到KMP算法的目标串不做回溯，一旦匹配失败则由模式串做移动.</p>
+<p>一个运行图示:<img src="/images/kmp.png" alt="kmp"></p>
+<h3 id="BM算法"><a href="#BM算法" class="headerlink" title="BM算法"></a>BM算法</h3><p>BM(Boyer -Moore)算法是Boyer 和Moore共同设计的快速串匹配算法。BM 算法与KMP 算法的主要区别是匹配操作的方向不同。虽然BM 算法仅把匹配操作的字符比较顺序改为从右向左,但匹配发生失败时,模式T 右移的计算方法却发生了较大的变化。</p>
+<p>为了方便讨论,假设字符表∑= { a, b, ……, y, z} , BM 算法的关键是,对给定的模式T = “t1 t2 …… tm”,定义一个从字符到正整数的映射:</p>
+<p>dist ：c→{1, 2,……, m}  [c∈∑]</p>
+<p>函数dist 称为滑动距离函数,它给出了正文中可能出现的任意字符在模式中的位置。函数dist 定义如下:</p>
+<p><img src="/images/bm1.jpg" alt="img"> </p>
+<p>例如, T =”pattern”,则dist ( p) = 6 , dist ( a) = 5 , dist ( t) = 3, dist ( e) = 2, dist ( r) = 1,dist ( n) = 7,字符表∑中的其他字符ch的dist ( ch) = 7。</p>
+<p>BM 算法的基本思想是：假设将主串中自位置i 起往左的一个子串与模式进行从右到左的匹配过程中,若发现不匹配,则下次应从主串的i + dist ( si )位置开始重新进行新一轮的匹配,其效果相当于把模式和主串均向右滑过一段距离dist (si) ,即跳过dist (si )个字符而无需进行比较。</p>
+<p>代码仅供参考</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dist</span><span class="params">(<span class="keyword">char</span> c,<span class="built_in">string</span> str)</span></span>&#123;</span><br><span class="line">     <span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(i;i&lt;str.size();i++)</span><br><span class="line">        <span class="keyword">if</span>(c==str[i]) </span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">if</span>(i&gt;=str.size()<span class="number">-1</span>)</span><br><span class="line">    <span class="keyword">return</span> str.size()<span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">return</span> (str.size()-i<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">BM</span><span class="params">(<span class="built_in">string</span> s,<span class="built_in">string</span> t,<span class="keyword">int</span> n,<span class="keyword">int</span> m)</span></span>&#123;    <span class="comment">//主串的长度为n,模式串的长度为m,主串和模式的数组下标从1 开始 s为主串,t为模式串</span></span><br><span class="line">   <span class="keyword">int</span> i=<span class="number">0</span>,j=<span class="number">0</span>;</span><br><span class="line">    i=m;</span><br><span class="line">    <span class="keyword">while</span>(i&lt;=n)</span><br><span class="line">    &#123;</span><br><span class="line">        j=m;</span><br><span class="line">        <span class="keyword">while</span> (j&gt;<span class="number">0</span>&amp;&amp;s[i]==t[j])</span><br><span class="line">        &#123;</span><br><span class="line">            j--;i--;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(j==<span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> i;</span><br><span class="line">        <span class="keyword">else</span>  i=i+dist(s[i],t);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span>  <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">string</span> s=<span class="string">&quot;bbc abcdab abcdabcdabde&quot;</span>,t=<span class="string">&quot;abcdabd&quot;</span>,st=<span class="string">&quot;pattern&quot;</span>;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; BM(s,st,s.length()<span class="number">-1</span>,st.length() <span class="number">-1</span>) &lt;&lt; <span class="built_in">endl</span>; </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cpp/" rel="tag"> <i class="fa fa-tag"></i>Cpp</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/cf6a0fee/" rel="prev" title="MySQL 通用二进制包安装">
+      <i class="fa fa-chevron-left"></i> MySQL 通用二进制包安装
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/735e5788/" rel="next" title="排序算法">
+      排序算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80OTUxMy8yNjAwNA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9A%B4%E5%8A%9B%E6%B3%95%E2%80%93bf%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">暴力法–bf算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E7%A0%81"><span class="nav-number">1.1.</span> <span class="nav-text">伪码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#C%E4%BB%A3%E7%A0%81"><span class="nav-number">1.2.</span> <span class="nav-text">C代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E7%A4%BA%E4%BE%8B"><span class="nav-number">1.3.</span> <span class="nav-text">执行示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%AA%E5%BF%83%E6%B3%95%E2%80%93KMP%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">贪心法–KMP算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E7%A0%81-1"><span class="nav-number">2.1.</span> <span class="nav-text">伪码:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Next%E6%95%B0%E7%BB%84%E6%B1%82%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">Next数组求法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Next%E6%95%B0%E7%BB%84%E5%8D%87%E7%BA%A7%E7%89%88"><span class="nav-number">2.3.</span> <span class="nav-text">Next数组升级版</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E7%AE%97%E6%B3%95"><span class="nav-number">2.4.</span> <span class="nav-text">完整算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BM%E7%AE%97%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">BM算法</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="allhw"
+      src="/images/1.jpg">
+  <p class="site-author-name" itemprop="name">allhw</p>
+  <div class="site-description" itemprop="description">logs for me</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wxl2" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wxl2" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:allhw@foxmail.com" title="E-Mail → mailto:allhw@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友链
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://zgao.top/" title="https:&#x2F;&#x2F;zgao.top" rel="noopener" target="_blank">zgao</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">allhw</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">156k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">2:22</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/1.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.allhw.top","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="引用不能引用数组 引用大小测试1234567891011121314151617181920212223class MyClass&amp;#123;    char &amp;  a;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cpp中的各种引用">
+<meta property="og:url" content="https://www.allhw.top/posts/55f877b6/index.html">
+<meta property="og:site_name" content="allhw&#39;s blog">
+<meta property="og:description" content="引用不能引用数组 引用大小测试1234567891011121314151617181920212223class MyClass&amp;#123;    char &amp;  a;">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-06-25T13:42:24.000Z">
+<meta property="article:modified_time" content="2020-09-19T10:38:25.213Z">
+<meta property="article:author" content="allhw">
+<meta property="article:tag" content="Cpp">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.allhw.top/posts/55f877b6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Cpp中的各种引用 | allhw's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">allhw's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Learning log of salted fish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://www.allhw.top/posts/55f877b6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.jpg">
+      <meta itemprop="name" content="allhw">
+      <meta itemprop="description" content="logs for me">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="allhw's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Cpp中的各种引用
+        </h1>
+
+        <div class="post-meta">
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-06-25 21:42:24" itemprop="dateCreated datePublished" datetime="2020-06-25T21:42:24+08:00">2020-06-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-09-19 18:38:25" itemprop="dateModified" datetime="2020-09-19T18:38:25+08:00">2020-09-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">笔记</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>9.9k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>9 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>引用不能引用数组</p>
+<h3 id="引用大小测试"><a href="#引用大小测试" class="headerlink" title="引用大小测试"></a>引用大小测试</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">char</span> &amp;  a;                                                                                                                                                                                                      </span><br><span class="line">    <span class="keyword">char</span> &amp;  b;  </span><br><span class="line">    <span class="keyword">char</span> &amp; c;<span class="comment">//引用的本质是指针，直接sizeof引用，就是求引用的数据大小</span></span><br><span class="line">	<span class="comment">//引用变量占据8个字节，平台为liunx X86_64</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> num = <span class="number">10</span>; </span><br><span class="line">    <span class="function"><span class="keyword">int</span> &amp; <span class="title">rnum</span><span class="params">(num)</span></span>;</span><br><span class="line">    <span class="keyword">double</span> db = <span class="number">10.9</span>;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> &amp; <span class="title">rdb</span><span class="params">(db)</span></span>;<span class="comment">//直接作用引用的变量</span></span><br><span class="line">    <span class="comment">//测试引用变量所占的大小</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(rnum) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;<span class="comment">//sizeof直接作用于引用的变量所以大小为该类型数据的值</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(rdb) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(MyClass) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">out:</span><br><span class="line"><span class="number">4</span></span><br><span class="line"><span class="number">8</span></span><br><span class="line"><span class="number">24</span></span><br></pre></td></tr></table></figure>
+
+<a id="more"></a>
+
+<h3 id="左值引用"><a href="#左值引用" class="headerlink" title="左值引用"></a>左值引用</h3><h4 id="返回栈中数据"><a href="#返回栈中数据" class="headerlink" title="返回栈中数据"></a>返回栈中数据</h4><h5 id="局部基本数据类型"><a href="#局部基本数据类型" class="headerlink" title="局部基本数据类型"></a>局部基本数据类型</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//该程序运行会产生段错误，原因是访问了已经释放的栈变量</span></span><br><span class="line"><span class="function"><span class="keyword">int</span>&amp;  <span class="title">mac</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> num=<span class="number">10</span>;</span><br><span class="line">	<span class="keyword">return</span> num;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   	<span class="comment">//用基本数据来接收返回值</span></span><br><span class="line">	<span class="keyword">int</span> i=mac();、</span><br><span class="line">     <span class="comment">//用引用来接收返回值</span></span><br><span class="line">    <span class="keyword">int</span> &amp;p=mac();</span><br><span class="line">   <span class="built_in">cout</span>&lt;&lt;p&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">	<span class="built_in">cout</span>&lt;&lt;i&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>:#无关代码已略去</span><br><span class="line"><span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">...</span><br><span class="line">   <span class="number">0x0000555555554a3c</span> &lt;+<span class="number">8</span>&gt;:	call   <span class="number">0x555555554955</span> &lt;mac()&gt;</span><br><span class="line">   <span class="number">0x0000555555554a41</span> &lt;+<span class="number">13</span>&gt;:	mov    eax,DWORD PTR [rax]</span><br><span class="line">   <span class="number">0x0000555555554a43</span> &lt;+<span class="number">15</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0xc</span>],eax</span><br><span class="line">   <span class="number">0x0000555555554a46</span> &lt;+<span class="number">18</span>&gt;:	call   <span class="number">0x555555554955</span> &lt;mac()&gt;</span><br><span class="line">=&gt; <span class="number">0x0000555555554a4b</span> &lt;+<span class="number">23</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x8</span>],rax</span><br><span class="line">...</span><br><span class="line">   <span class="number">0x0000555555554aa4</span> &lt;+<span class="number">112</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line"> </span><br><span class="line">       <span class="comment">//实际gcc编译生成的汇编不是如此，此处是使用全局num生成的汇编，</span></span><br><span class="line">Dump of assembler code <span class="keyword">for</span> function mac():</span><br><span class="line">   <span class="number">0x0000555555554955</span> &lt;+<span class="number">0</span>&gt;:	push   rbp</span><br><span class="line">   <span class="number">0x0000555555554956</span> &lt;+<span class="number">1</span>&gt;:	mov    rbp,rsp</span><br><span class="line">   <span class="number">0x0000555555554959</span> &lt;+<span class="number">4</span>&gt;:	mov    DWORD PTR [rip+<span class="number">0x2017d1</span>],<span class="number">0xa</span>        # <span class="number">0x555555756134</span> &lt;num&gt;</span><br><span class="line">   <span class="number">0x0000555555554963</span> &lt;+<span class="number">14</span>&gt;:	lea    rax,[rip+<span class="number">0x2017ca</span>]        # <span class="number">0x555555756134</span> &lt;num&gt;</span><br><span class="line">=&gt; <span class="number">0x000055555555496a</span> &lt;+<span class="number">21</span>&gt;:	pop    rbp</span><br><span class="line">   <span class="number">0x000055555555496b</span> &lt;+<span class="number">22</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line">       vs2015中反汇编mac</span><br><span class="line">       <span class="number">00F</span>721F8 C7 <span class="number">45</span> F4 <span class="number">0</span>A <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> mov         dword ptr [num],<span class="number">0</span>Ah  </span><br><span class="line">    	<span class="keyword">int</span> i = (<span class="keyword">int</span>)&amp;num;</span><br><span class="line"><span class="number">00F</span>721FF <span class="number">8</span>D <span class="number">45</span> F4             lea         eax,[num]  </span><br><span class="line"><span class="number">00F</span>72202 <span class="number">89</span> <span class="number">45</span> E8             mov         dword ptr [i],eax  </span><br><span class="line">     	<span class="keyword">return</span> num;</span><br><span class="line"><span class="number">00F</span>72205 <span class="number">8</span>D <span class="number">45</span> F4             lea         eax,[num]  </span><br><span class="line">gdb中反汇编</span><br><span class="line">    <span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">mac</span><span class="params">()</span>:</span></span><br><span class="line">   0x00005555555549e8 &lt;+0&gt;:	push   rbp</span><br><span class="line">   <span class="number">0x00005555555549e9</span> &lt;+<span class="number">1</span>&gt;:	mov    rbp,rsp</span><br><span class="line">   <span class="number">0x00005555555549ec</span> &lt;+<span class="number">4</span>&gt;:	sub    rsp,<span class="number">0x10</span></span><br><span class="line">   <span class="number">0x00005555555549f0</span> &lt;+<span class="number">8</span>&gt;:	mov    rax,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x00005555555549f9</span> &lt;+<span class="number">17</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x8</span>],rax</span><br><span class="line">   <span class="number">0x00005555555549fd</span> &lt;+<span class="number">21</span>&gt;:	<span class="keyword">xor</span>    eax,eax</span><br><span class="line">   <span class="number">0x00005555555549ff</span> &lt;+<span class="number">23</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0xc</span>],<span class="number">0xa</span></span><br><span class="line">=&gt; <span class="number">0x0000555555554a06</span> &lt;+<span class="number">30</span>&gt;:	mov    eax,<span class="number">0x0</span></span><br><span class="line">   <span class="number">0x0000555555554a0b</span> &lt;+<span class="number">35</span>&gt;:	mov    rdx,QWORD PTR [rbp<span class="number">-0x8</span>]</span><br><span class="line">   <span class="number">0x0000555555554a0f</span> &lt;+<span class="number">39</span>&gt;:	<span class="keyword">xor</span>    rdx,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x0000555555554a18</span> &lt;+<span class="number">48</span>&gt;:	je     <span class="number">0x555555554a1f</span> &lt;mac()+<span class="number">55</span>&gt;</span><br><span class="line">   <span class="number">0x0000555555554a1a</span> &lt;+<span class="number">50</span>&gt;:	call   <span class="number">0x555555554850</span> &lt;__stack_chk_fail@plt&gt;</span><br><span class="line">   <span class="number">0x0000555555554a1f</span> &lt;+<span class="number">55</span>&gt;:	leave  </span><br><span class="line">   <span class="number">0x0000555555554a20</span> &lt;+<span class="number">56</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.gdb中对栈进行了检查</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>用基本数据类型接收时:mac函数执行，将临时变量num的地址存入rax寄存器中作为返回值，函数返回后在main函数中取出该地址的值存入变量i中</p>
+<p>用引用接收是:mac函数执行，将临时变量num的地址存入rax寄存器中作为返回值，函数返回后在main函数直接将该地址取出存入引用变量当中，之后一系列操作均通过引用变量中保存的地址值来完成，若之后调用一些函数执行，则有可能会覆盖之前mac函数的堆栈，导致数据错误，并且当mac函数执行结束返回后该调用堆栈在系统中已经处于回收状态，是不可用的。</p>
+</blockquote>
+<h5 id="局部类"><a href="#局部类" class="headerlink" title="局部类"></a>局部类</h5><h6 id="先看一个不用引用作为函数返回值的函数"><a href="#先看一个不用引用作为函数返回值的函数" class="headerlink" title="先看一个不用引用作为函数返回值的函数"></a>先看一个不用引用作为函数返回值的函数</h6><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Struct</span>&#123;</span></span><br><span class="line">	<span class="keyword">public</span>:</span><br><span class="line">	<span class="keyword">int</span> a,b,c,d;</span><br><span class="line">	<span class="keyword">int</span> aa[<span class="number">10</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">Struct <span class="title">Smac</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Struct test;</span><br><span class="line">	test.a=<span class="number">1</span>;</span><br><span class="line">	test.b=<span class="number">2</span>;</span><br><span class="line">	test.c=<span class="number">3</span>;</span><br><span class="line">	test.d=<span class="number">4</span>;</span><br><span class="line">	<span class="keyword">return</span> test;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Struct p=Smac();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>函数返回时会进行内存复制，详细过程会在后续介绍</p>
+</blockquote>
+<h6 id="引用作为函数返回值"><a href="#引用作为函数返回值" class="headerlink" title="引用作为函数返回值"></a>引用作为函数返回值</h6><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//程序是错误的</span></span><br><span class="line"><span class="function">Struct&amp; <span class="title">Smac</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Struct test;</span><br><span class="line">	test.a=<span class="number">1</span>;</span><br><span class="line">	test.b=<span class="number">2</span>;</span><br><span class="line">	test.c=<span class="number">3</span>;</span><br><span class="line">	test.d=<span class="number">4</span>;</span><br><span class="line">	<span class="keyword">return</span> test;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Struct p=Smac();</span><br><span class="line">	Struct&amp; pp=Smac();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>:</span><br><span class="line"><span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">Smac</span><span class="params">()</span>:</span></span><br><span class="line">   0x00005555555547aa &lt;+0&gt;:	push   rbp</span><br><span class="line">   <span class="number">0x00005555555547ab</span> &lt;+<span class="number">1</span>&gt;:	mov    rbp,rsp</span><br><span class="line">   <span class="number">0x00005555555547ae</span> &lt;+<span class="number">4</span>&gt;:	sub    rsp,<span class="number">0x40</span></span><br><span class="line">   <span class="number">0x00005555555547b2</span> &lt;+<span class="number">8</span>&gt;:	mov    rax,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x00005555555547bb</span> &lt;+<span class="number">17</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x8</span>],rax</span><br><span class="line">   <span class="number">0x00005555555547bf</span> &lt;+<span class="number">21</span>&gt;:	<span class="keyword">xor</span>    eax,eax</span><br><span class="line">   <span class="number">0x00005555555547c1</span> &lt;+<span class="number">23</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0x40</span>],<span class="number">0x1</span></span><br><span class="line">   <span class="number">0x00005555555547c8</span> &lt;+<span class="number">30</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0x3c</span>],<span class="number">0x2</span></span><br><span class="line">   <span class="number">0x00005555555547cf</span> &lt;+<span class="number">37</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0x38</span>],<span class="number">0x3</span></span><br><span class="line">   <span class="number">0x00005555555547d6</span> &lt;+<span class="number">44</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0x34</span>],<span class="number">0x4</span></span><br><span class="line">   <span class="number">0x00005555555547dd</span> &lt;+<span class="number">51</span>&gt;:	mov    eax,<span class="number">0x0</span><span class="comment">//将0地址放入了返回值，访问时会出现异常，导致程序崩溃</span></span><br><span class="line">   <span class="number">0x00005555555547e2</span> &lt;+<span class="number">56</span>&gt;:	mov    rdx,QWORD PTR [rbp<span class="number">-0x8</span>]</span><br><span class="line">   <span class="number">0x00005555555547e6</span> &lt;+<span class="number">60</span>&gt;:	<span class="keyword">xor</span>    rdx,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x00005555555547ef</span> &lt;+<span class="number">69</span>&gt;:	je     <span class="number">0x5555555547f6</span> &lt;Smac()+<span class="number">76</span>&gt;</span><br><span class="line">   <span class="number">0x00005555555547f1</span> &lt;+<span class="number">71</span>&gt;:	call   <span class="number">0x555555554670</span> &lt;__stack_chk_fail@plt&gt;</span><br><span class="line">=&gt; <span class="number">0x00005555555547f6</span> &lt;+<span class="number">76</span>&gt;:	leave  </span><br><span class="line">   <span class="number">0x00005555555547f7</span> &lt;+<span class="number">77</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+
+<h4 id="返回堆中数据"><a href="#返回堆中数据" class="headerlink" title="返回堆中数据"></a>返回堆中数据</h4><h5 id="仅返回引用"><a href="#仅返回引用" class="headerlink" title="仅返回引用"></a>仅返回引用</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Struct</span>&#123;</span></span><br><span class="line">	<span class="keyword">public</span>:</span><br><span class="line">	<span class="keyword">int</span> a,b,c,d;</span><br><span class="line">	<span class="keyword">int</span> aa[<span class="number">10</span>];</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function">Struct&amp; <span class="title">Smac</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Struct *test=<span class="keyword">new</span> Struct;</span><br><span class="line">	test-&gt;a=<span class="number">1</span>;</span><br><span class="line">	<span class="keyword">return</span> *test;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Struct p=Smac();</span><br><span class="line">	Struct&amp; pp=Smac();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>:</span><br><span class="line"><span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">...</span><br><span class="line">=&gt; <span class="number">0x0000555555554828</span> &lt;+<span class="number">8</span>&gt;:	mov    rax,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x0000555555554831</span> &lt;+<span class="number">17</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x8</span>],rax</span><br><span class="line">   <span class="number">0x0000555555554835</span> &lt;+<span class="number">21</span>&gt;:	<span class="keyword">xor</span>    eax,eax</span><br><span class="line">   <span class="number">0x0000555555554837</span> &lt;+<span class="number">23</span>&gt;:	call   <span class="number">0x5555555547fa</span> &lt;Smac()&gt;</span><br><span class="line">   <span class="number">0x000055555555483c</span> &lt;+<span class="number">28</span>&gt;:	mov    rcx,rax<span class="comment">//得到分配变量的地址，而后进行一系列内存复制操作</span></span><br><span class="line">   <span class="number">0x000055555555483f</span> &lt;+<span class="number">31</span>&gt;:	mov    rax,QWORD PTR [rcx]</span><br><span class="line">   <span class="number">0x0000555555554842</span> &lt;+<span class="number">34</span>&gt;:	mov    rdx,QWORD PTR [rcx+<span class="number">0x8</span>]</span><br><span class="line">   <span class="number">0x0000555555554846</span> &lt;+<span class="number">38</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x40</span>],rax</span><br><span class="line">   <span class="number">0x000055555555484a</span> &lt;+<span class="number">42</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x38</span>],rdx</span><br><span class="line">   <span class="number">0x000055555555484e</span> &lt;+<span class="number">46</span>&gt;:	mov    rax,QWORD PTR [rcx+<span class="number">0x10</span>]</span><br><span class="line">   <span class="number">0x0000555555554852</span> &lt;+<span class="number">50</span>&gt;:	mov    rdx,QWORD PTR [rcx+<span class="number">0x18</span>]</span><br><span class="line">   <span class="number">0x0000555555554856</span> &lt;+<span class="number">54</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x30</span>],rax</span><br><span class="line">   <span class="number">0x000055555555485a</span> &lt;+<span class="number">58</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x28</span>],rdx</span><br><span class="line">   <span class="number">0x000055555555485e</span> &lt;+<span class="number">62</span>&gt;:	mov    rax,QWORD PTR [rcx+<span class="number">0x20</span>]</span><br><span class="line">   <span class="number">0x0000555555554862</span> &lt;+<span class="number">66</span>&gt;:	mov    rdx,QWORD PTR [rcx+<span class="number">0x28</span>]</span><br><span class="line">   <span class="number">0x0000555555554866</span> &lt;+<span class="number">70</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x20</span>],rax</span><br><span class="line">   <span class="number">0x000055555555486a</span> &lt;+<span class="number">74</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x18</span>],rdx</span><br><span class="line">   <span class="number">0x000055555555486e</span> &lt;+<span class="number">78</span>&gt;:	mov    rax,QWORD PTR [rcx+<span class="number">0x30</span>]</span><br><span class="line">   <span class="number">0x0000555555554872</span> &lt;+<span class="number">82</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x10</span>],rax</span><br><span class="line">   <span class="number">0x0000555555554876</span> &lt;+<span class="number">86</span>&gt;:	call   <span class="number">0x5555555547fa</span> &lt;Smac()&gt;</span><br><span class="line">   <span class="number">0x000055555555487b</span> &lt;+<span class="number">91</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x48</span>],rax</span><br><span class="line">   <span class="number">0x000055555555487f</span> &lt;+<span class="number">95</span>&gt;:	 mov    eax,<span class="number">0x0</span></span><br><span class="line">   <span class="number">0x0000555555554884</span> &lt;+<span class="number">100</span>&gt;:	mov    rdx,QWORD PTR [rbp<span class="number">-0x8</span>]</span><br><span class="line">   <span class="number">0x0000555555554888</span> &lt;+<span class="number">104</span>&gt;:	<span class="keyword">xor</span>    rdx,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x0000555555554891</span> &lt;+<span class="number">113</span>&gt;:	je     <span class="number">0x555555554898</span> &lt;main()+<span class="number">120</span>&gt;</span><br><span class="line">   <span class="number">0x0000555555554893</span> &lt;+<span class="number">115</span>&gt;:	call   <span class="number">0x5555555546c0</span> &lt;__stack_chk_fail@plt&gt;</span><br><span class="line">   <span class="number">0x0000555555554898</span> &lt;+<span class="number">120</span>&gt;:	leave  </span><br><span class="line">   <span class="number">0x0000555555554899</span> &lt;+<span class="number">121</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line"></span><br><span class="line"> Dump of assembler code <span class="keyword">for</span> function Smac():</span><br><span class="line">=&gt; <span class="number">0x00005555555547fa</span> &lt;+<span class="number">0</span>&gt;:	push   rbp</span><br><span class="line">   <span class="number">0x00005555555547fb</span> &lt;+<span class="number">1</span>&gt;:	mov    rbp,rsp</span><br><span class="line">   <span class="number">0x00005555555547fe</span> &lt;+<span class="number">4</span>&gt;:	sub    rsp,<span class="number">0x10</span></span><br><span class="line">   <span class="number">0x0000555555554802</span> &lt;+<span class="number">8</span>&gt;:	mov    edi,<span class="number">0x38</span></span><br><span class="line">   <span class="number">0x0000555555554807</span> &lt;+<span class="number">13</span>&gt;:	call   <span class="number">0x5555555546b0</span> &lt;_Znwm@plt&gt;</span><br><span class="line">   <span class="number">0x000055555555480c</span> &lt;+<span class="number">18</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x8</span>],rax</span><br><span class="line">   <span class="number">0x0000555555554810</span> &lt;+<span class="number">22</span>&gt;:	mov    rax,QWORD PTR [rbp<span class="number">-0x8</span>]</span><br><span class="line">   <span class="number">0x0000555555554814</span> &lt;+<span class="number">26</span>&gt;:	mov    DWORD PTR [rax],<span class="number">0x1</span></span><br><span class="line">   <span class="number">0x000055555555481a</span> &lt;+<span class="number">32</span>&gt;:	mov    rax,QWORD PTR [rbp<span class="number">-0x8</span>]</span><br><span class="line">   <span class="number">0x000055555555481e</span> &lt;+<span class="number">36</span>&gt;:	leave  </span><br><span class="line">   <span class="number">0x000055555555481f</span> &lt;+<span class="number">37</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>当使用普通变量接收函数返回值时，传出分配变量的地址，而后使用该地址进行内存复制</p>
+<p>当使用引用变量时，直接将传出的地址存入即可</p>
+</blockquote>
+<h4 id="指针引用"><a href="#指针引用" class="headerlink" title="指针引用"></a>指针引用</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> *p=&amp;i;</span><br><span class="line">	<span class="keyword">int</span>*&amp; pp=p;</span><br><span class="line">	<span class="keyword">int</span> num=*pp;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>:</span><br><span class="line"><span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">   0x00005555555547aa &lt;+0&gt;:	push   rbp</span><br><span class="line">   <span class="number">0x00005555555547ab</span> &lt;+<span class="number">1</span>&gt;:	mov    rbp,rsp</span><br><span class="line">   <span class="number">0x00005555555547ae</span> &lt;+<span class="number">4</span>&gt;:	sub    rsp,<span class="number">0x20</span></span><br><span class="line">   <span class="number">0x00005555555547b2</span> &lt;+<span class="number">8</span>&gt;:	mov    rax,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x00005555555547bb</span> &lt;+<span class="number">17</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x8</span>],rax</span><br><span class="line">   <span class="number">0x00005555555547bf</span> &lt;+<span class="number">21</span>&gt;:	<span class="keyword">xor</span>    eax,eax</span><br><span class="line">   <span class="number">0x00005555555547c1</span> &lt;+<span class="number">23</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0x20</span>],<span class="number">0x0</span></span><br><span class="line">   <span class="number">0x00005555555547c8</span> &lt;+<span class="number">30</span>&gt;:	lea    rax,[rbp<span class="number">-0x20</span>]</span><br><span class="line">   <span class="number">0x00005555555547cc</span> &lt;+<span class="number">34</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x18</span>],rax</span><br><span class="line">=&gt; <span class="number">0x00005555555547d0</span> &lt;+<span class="number">38</span>&gt;:	lea    rax,[rbp<span class="number">-0x18</span>]</span><br><span class="line">   <span class="number">0x00005555555547d4</span> &lt;+<span class="number">42</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x10</span>],rax</span><br><span class="line">   <span class="number">0x00005555555547d8</span> &lt;+<span class="number">46</span>&gt;:	mov    rax,QWORD PTR [rbp<span class="number">-0x10</span>]</span><br><span class="line">   <span class="number">0x00005555555547dc</span> &lt;+<span class="number">50</span>&gt;:	mov    rax,QWORD PTR [rax]</span><br><span class="line">   <span class="number">0x00005555555547df</span> &lt;+<span class="number">53</span>&gt;:	mov    eax,DWORD PTR [rax]</span><br><span class="line">   <span class="number">0x00005555555547e1</span> &lt;+<span class="number">55</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0x1c</span>],eax</span><br><span class="line">   <span class="number">0x00005555555547e4</span> &lt;+<span class="number">58</span>&gt;:	mov    eax,<span class="number">0x0</span></span><br><span class="line">   <span class="number">0x00005555555547e9</span> &lt;+<span class="number">63</span>&gt;:	mov    rdx,QWORD PTR [rbp<span class="number">-0x8</span>]</span><br><span class="line">   <span class="number">0x00005555555547ed</span> &lt;+<span class="number">67</span>&gt;:	<span class="keyword">xor</span>    rdx,QWORD PTR fs:<span class="number">0x28</span></span><br><span class="line">   <span class="number">0x00005555555547f6</span> &lt;+<span class="number">76</span>&gt;:	je     <span class="number">0x5555555547fd</span> &lt;main()+<span class="number">83</span>&gt;</span><br><span class="line">   <span class="number">0x00005555555547f8</span> &lt;+<span class="number">78</span>&gt;:	call   <span class="number">0x555555554670</span> &lt;__stack_chk_fail@地址plt&gt;</span><br><span class="line">   <span class="number">0x00005555555547fd</span> &lt;+<span class="number">83</span>&gt;:	leave  </span><br><span class="line">   <span class="number">0x00005555555547fe</span> &lt;+<span class="number">84</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>指针的引用相当于一个二级指针，其内的值保存指针的地址</p>
+</blockquote>
+<h4 id="普通变量引用"><a href="#普通变量引用" class="headerlink" title="普通变量引用"></a>普通变量引用</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;p=i;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>:</span><br><span class="line"> <span class="number">0x00005555555547c8</span> &lt;+<span class="number">30</span>&gt;:	lea    rax,[rbp<span class="number">-0x14</span>] <span class="comment">//i的地址</span></span><br><span class="line">  <span class="number">0x00005555555547cc</span> &lt;+<span class="number">34</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x10</span>],rax<span class="comment">//将地址存入p中</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>普通变量的引用相当于一个一级指针，保存引用变量的地址</p>
+</blockquote>
+<h4 id="引用作为函数参数"><a href="#引用作为函数参数" class="headerlink" title="引用作为函数参数"></a>引用作为函数参数</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mac</span><span class="params">(<span class="keyword">int</span> &amp;i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	i=<span class="number">10</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> num=<span class="number">10</span>;</span><br><span class="line">	mac(num);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>:</span><br><span class="line"><span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">...</span><br><span class="line">   <span class="number">0x00005555555547da</span> &lt;+<span class="number">23</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0xc</span>],<span class="number">0xa</span></span><br><span class="line">   <span class="number">0x00005555555547e1</span> &lt;+<span class="number">30</span>&gt;:	lea    rax,[rbp<span class="number">-0xc</span>]<span class="comment">//获得参数地址</span></span><br><span class="line">   <span class="number">0x00005555555547e5</span> &lt;+<span class="number">34</span>&gt;:	mov    rdi,rax</span><br><span class="line">   <span class="number">0x00005555555547e8</span> &lt;+<span class="number">37</span>&gt;:	call   <span class="number">0x5555555547aa</span> &lt;mac(<span class="keyword">int</span>&amp;)&gt;</span><br><span class="line">...</span><br><span class="line">   <span class="number">0x0000555555554807</span> &lt;+<span class="number">68</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line"><span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">mac</span><span class="params">(<span class="keyword">int</span>&amp;)</span>:</span></span><br><span class="line">...</span><br><span class="line">   <span class="number">0x00005555555547ae</span> &lt;+<span class="number">4</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x8</span>],rdi</span><br><span class="line">   <span class="number">0x00005555555547b2</span> &lt;+<span class="number">8</span>&gt;:	mov    rax,QWORD PTR [rbp<span class="number">-0x8</span>]</span><br><span class="line">   <span class="number">0x00005555555547b6</span> &lt;+<span class="number">12</span>&gt;:	mov    DWORD PTR [rax],<span class="number">0xa</span></span><br><span class="line">...</span><br><span class="line">   <span class="number">0x00005555555547c2</span> &lt;+<span class="number">24</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>传递参数时将变量地址保存到rdi寄存器中传参</p>
+</blockquote>
+<h3 id="右值引用"><a href="#右值引用" class="headerlink" title="右值引用"></a>右值引用</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> num=<span class="number">10</span>;</span><br><span class="line">	<span class="keyword">int</span> *&amp;&amp;p=&amp;num;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">asm</span>:</span><br><span class="line"><span class="function">Dump of assembler code <span class="keyword">for</span> function <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">...</span><br><span class="line">   <span class="number">0x00005555555547c1</span> &lt;+<span class="number">23</span>&gt;:	mov    DWORD PTR [rbp<span class="number">-0x1c</span>],<span class="number">0xa</span></span><br><span class="line">   <span class="number">0x00005555555547c8</span> &lt;+<span class="number">30</span>&gt;:	lea    rax,[rbp<span class="number">-0x1c</span>]<span class="comment">//&amp;num</span></span><br><span class="line">   <span class="number">0x00005555555547cc</span> &lt;+<span class="number">34</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x18</span>],rax</span><br><span class="line">   <span class="number">0x00005555555547d0</span> &lt;+<span class="number">38</span>&gt;:	lea    rax,[rbp<span class="number">-0x18</span>]</span><br><span class="line">   <span class="number">0x00005555555547d4</span> &lt;+<span class="number">42</span>&gt;:	mov    QWORD PTR [rbp<span class="number">-0x10</span>],rax</span><br><span class="line">...</span><br><span class="line">   <span class="number">0x00005555555547f2</span> &lt;+<span class="number">72</span>&gt;:	ret    </span><br><span class="line">End of assembler dump.</span><br><span class="line"> (gdb) p p</span><br><span class="line">$<span class="number">21</span> = (<span class="keyword">int</span> *&amp;&amp;) @<span class="number">0x7fffffffddd8</span>: <span class="number">0x7fffffffddd4</span></span><br><span class="line">       <span class="built_in">cout</span>&lt;&lt;p;输出为<span class="number">0x7fffffffddd4</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>右值引用，好比一个二级指针，但不同的是访问p可以直接获得num的地址，因而右值引用保存的是一个地址，为右值，不可更改.右值引用常用于类之间的拷贝、移动；使用右值引用可以减少重复内存拷贝，传递函数指针、普通函数参数等.如std::move(T&amp;&amp; t)).</p>
+</blockquote>
+<h3 id="复杂引用"><a href="#复杂引用" class="headerlink" title="复杂引用"></a>复杂引用</h3><h4 id="函数指针的引用"><a href="#函数指针的引用" class="headerlink" title="函数指针的引用"></a>函数指针的引用</h4><h5 id="作为函数返回值"><a href="#作为函数返回值" class="headerlink" title="作为函数返回值"></a>作为函数返回值</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>(*&amp; fun(<span class="keyword">int</span> (*&amp;rp)(<span class="keyword">int</span>,<span class="keyword">int</span>)))(<span class="keyword">int</span>, <span class="keyword">int</span>)<span class="comment">//最后的(int, int)为返回类型</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>返回一个函数指针的引用，函数指针指向的函数类型为int(&amp;)(int,int),也是一个返回函数指针引用的函数，类型为int(&amp;)(int,int)</p>
+</blockquote>
+<h5 id="作为函数参数"><a href="#作为函数参数" class="headerlink" title="作为函数参数"></a>作为函数参数</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun</span><span class="params">(<span class="keyword">int</span>(* &amp; rp)(<span class="keyword">int</span>,<span class="keyword">int</span>))</span></span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>一个int(*)(int,int)型指针的引用作为函数参数的函数</p>
+</blockquote>
+<p>int (*&amp;rp)(int,int))</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cpp/" rel="tag"> <i class="fa fa-tag"></i>Cpp</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/dae3da92/" rel="prev" title="Cpp连接MySQL数据库相关操作">
+      <i class="fa fa-chevron-left"></i> Cpp连接MySQL数据库相关操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/7808c5f/" rel="next" title="muduo网络库-Timestamp类">
+      muduo网络库-Timestamp类 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80OTUxMy8yNjAwNA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E5%A4%A7%E5%B0%8F%E6%B5%8B%E8%AF%95"><span class="nav-number">1.</span> <span class="nav-text">引用大小测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B7%A6%E5%80%BC%E5%BC%95%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">左值引用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E6%A0%88%E4%B8%AD%E6%95%B0%E6%8D%AE"><span class="nav-number">2.1.</span> <span class="nav-text">返回栈中数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B1%80%E9%83%A8%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.1.</span> <span class="nav-text">局部基本数据类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B1%80%E9%83%A8%E7%B1%BB"><span class="nav-number">2.1.2.</span> <span class="nav-text">局部类</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%85%88%E7%9C%8B%E4%B8%80%E4%B8%AA%E4%B8%8D%E7%94%A8%E5%BC%95%E7%94%A8%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC%E7%9A%84%E5%87%BD%E6%95%B0"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">先看一个不用引用作为函数返回值的函数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">引用作为函数返回值</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E5%A0%86%E4%B8%AD%E6%95%B0%E6%8D%AE"><span class="nav-number">2.2.</span> <span class="nav-text">返回堆中数据</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BB%85%E8%BF%94%E5%9B%9E%E5%BC%95%E7%94%A8"><span class="nav-number">2.2.1.</span> <span class="nav-text">仅返回引用</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%87%E9%92%88%E5%BC%95%E7%94%A8"><span class="nav-number">2.3.</span> <span class="nav-text">指针引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E5%8F%98%E9%87%8F%E5%BC%95%E7%94%A8"><span class="nav-number">2.4.</span> <span class="nav-text">普通变量引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0"><span class="nav-number">2.5.</span> <span class="nav-text">引用作为函数参数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">右值引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E6%9D%82%E5%BC%95%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">复杂引用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E7%9A%84%E5%BC%95%E7%94%A8"><span class="nav-number">4.1.</span> <span class="nav-text">函数指针的引用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="nav-number">4.1.1.</span> <span class="nav-text">作为函数返回值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0"><span class="nav-number">4.1.2.</span> <span class="nav-text">作为函数参数</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="allhw"
+      src="/images/1.jpg">
+  <p class="site-author-name" itemprop="name">allhw</p>
+  <div class="site-description" itemprop="description">logs for me</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wxl2" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wxl2" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:allhw@foxmail.com" title="E-Mail → mailto:allhw@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友链
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://zgao.top/" title="https:&#x2F;&#x2F;zgao.top" rel="noopener" target="_blank">zgao</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">allhw</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">156k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">2:22</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

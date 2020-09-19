@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/1.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.allhw.top","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="muduo中封装的日志相关操作，涉及文件:Logging.h，Logging.cc，LogStream.h，LogStream.cc，LogFile.h，LogFile.cc，FileUtil.h，FileUtil.cc，StringPiece.h">
+<meta property="og:type" content="article">
+<meta property="og:title" content="muduo-日志库">
+<meta property="og:url" content="https://www.allhw.top/posts/5975a6bc/index.html">
+<meta property="og:site_name" content="allhw&#39;s blog">
+<meta property="og:description" content="muduo中封装的日志相关操作，涉及文件:Logging.h，Logging.cc，LogStream.h，LogStream.cc，LogFile.h，LogFile.cc，FileUtil.h，FileUtil.cc，StringPiece.h">
+<meta property="og:locale">
+<meta property="og:image" content="https://www.allhw.top/images/UML/Logger.png">
+<meta property="og:image" content="https://www.allhw.top/images/UML/Impl.png">
+<meta property="og:image" content="https://www.allhw.top/images/UML/LogFile.png">
+<meta property="article:published_time" content="2020-09-19T11:29:58.000Z">
+<meta property="article:modified_time" content="2020-09-19T11:53:49.925Z">
+<meta property="article:author" content="allhw">
+<meta property="article:tag" content="Cpp">
+<meta property="article:tag" content="muduo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.allhw.top/images/UML/Logger.png">
+
+<link rel="canonical" href="https://www.allhw.top/posts/5975a6bc/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>muduo-日志库 | allhw's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">allhw's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Learning log of salted fish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://www.allhw.top/posts/5975a6bc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.jpg">
+      <meta itemprop="name" content="allhw">
+      <meta itemprop="description" content="logs for me">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="allhw's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          muduo-日志库
+        </h1>
+
+        <div class="post-meta">
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-09-19 19:29:58 / Modified: 19:53:49" itemprop="dateCreated datePublished" datetime="2020-09-19T19:29:58+08:00">2020-09-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BC%80%E6%BA%90%E4%BB%A3%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">开源代码</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>7.3k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>7 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>muduo中封装的日志相关操作，涉及文件:Logging.h，Logging.cc，LogStream.h，LogStream.cc，LogFile.h，LogFile.cc，FileUtil.h，FileUtil.cc，StringPiece.h</p>
+<a id="more"></a>
+
+<h4 id="Logger"><a href="#Logger" class="headerlink" title="Logger"></a>Logger</h4><p><img src="/images/UML/Logger.png" alt="Logger"></p>
+<blockquote>
+<p>Logger类含有两个内部类，一个是Impl类，一个是SourceFile类。</p>
+</blockquote>
+<p>使用Logger输出日志信息非常简单，只需使用代码所提供的宏即可，下面以LOG_INFO为例:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LOG_INFO <span class="meta-keyword">if</span> (muduo::Logger::logLevel() &lt;= muduo::Logger::INFO) \</span></span><br><span class="line">  muduo::Logger(__FILE__, __LINE__).stream()</span><br><span class="line"><span class="comment">//使用示例</span></span><br><span class="line"> LOG_INFO &lt;&lt; <span class="string">&quot;Hello CST&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>日志输出：20200708 08:09:58.590748Z 16287 INFO Hello CST - Logging_test.cc:126</p>
+<p>执行流程:</p>
+<blockquote>
+<p>logLevel函数是一个静态成员函数，调用其判断日志等级是否打印当前日志，假设条件成立会打印当前日志。LOG_INFO展开为 muduo::Logger(<strong>FILE</strong>, <strong>LINE</strong>).stream()&lt;&lt;”Hello CST”;先调用Logger类的构造函数，而后Logger类用一部分参数来构造Impl类，然后将一系列字符格式化到Impl类中LogStream类成员变量的buffer_中，最后在Logger的析构函数中打印日志。调用关系Logger() =&gt; Impl() =&gt; LogStream() =&gt; operator&lt;&lt;()FixedBuffer =&gt; g_output() =&gt; g_flush()</p>
+</blockquote>
+<h4 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h4><blockquote>
+<p>列举一个</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Logger::Logger(SourceFile file, <span class="keyword">int</span> line)</span><br><span class="line">  : impl_(INFO, <span class="number">0</span>, file, line)</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>LOG_INFO宏定义展开，将参数设置为 Logger::Logger(<strong>FILE</strong>, <strong>LINE</strong>),FILE和LINE两个宏会被自动展开为文件名和当前代码行号，对于</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">int</span> N&gt;</span><br><span class="line">SourceFile(<span class="keyword">const</span> <span class="keyword">char</span> (&amp;arr)[N])</span><br></pre></td></tr></table></figure>
+
+<p>中的N，编译器会根据展开的FILE字符串长度来进行实例化。</p>
+<h4 id="其余函数"><a href="#其余函数" class="headerlink" title="其余函数"></a>其余函数</h4><blockquote>
+<p>相比起来其余函数都比较简单，此处大致说说其作用即可</p>
+</blockquote>
+<p>stream函数返回内部类impl_变量的LogStream对象。</p>
+<p>logLevel函数返回当前日志等级</p>
+<p>setLogLevel函数设置当前日志等级</p>
+<p>setOutput函数设置日志打印函数，怎么打印，打印在哪</p>
+<p>setFlush函数设置日志刷新方式<br>setTimeZone函数设置时区</p>
+<h4 id="Impl"><a href="#Impl" class="headerlink" title="Impl"></a>Impl</h4><p><img src="/images/UML/Impl.png" alt="Impl"></p>
+<blockquote>
+<p>Impl构造函将时间，线程id日志等级缓存到LogStream类对象中，如果设置了错误码则将错误码一并缓存。</p>
+<p>formatTime格式化时间</p>
+<p>finish在尾部加上文件名和行号</p>
+</blockquote>
+<h4 id="Fmt"><a href="#Fmt" class="headerlink" title="Fmt"></a>Fmt</h4><blockquote>
+<p>格式化输出字符串模板类</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Fmt</span> // :</span> noncopyable</span><br><span class="line">&#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">  Fmt(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, T val);</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">const</span> <span class="keyword">char</span>* <span class="title">data</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> buf_; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">length</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> length_; &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">char</span> buf_[<span class="number">32</span>];</span><br><span class="line">  <span class="keyword">int</span> length_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>参数fmt是格式控制符，构造函数利用传入的格式将val的值按照该格式输出到buf_中</p>
+</blockquote>
+<p>另外还在LogStream.cc文件中显示实例化了Fmt类</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Explicit instantiations</span></span><br><span class="line"><span class="function"><span class="keyword">template</span> <span class="title">Fmt::Fmt</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, <span class="keyword">char</span>)</span></span>;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">template</span> <span class="title">Fmt::Fmt</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, <span class="keyword">double</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="FixedBuffer"><a href="#FixedBuffer" class="headerlink" title="FixedBuffer"></a>FixedBuffer</h4><p>FixedBuffer中存储的是字符</p>
+<blockquote>
+<p>设计的一个数据缓冲区，data_存放数据，cur_指向数据末端，并且每当插入数据cur_会自己改变。cookieStart和cookieEnd函数并未实现所以这两个函数和setCookie函数可以暂时不用理会。</p>
+</blockquote>
+<h4 id="成员函数"><a href="#成员函数" class="headerlink" title="成员函数"></a>成员函数</h4><blockquote>
+<p>append：往缓冲中添加数据</p>
+<p>data：返回数据起始地址<br>length：返回当前保存数据的长度<br>current：返回cur_指针的位置</p>
+<p>avail：返回剩余缓冲区的大小<br>add：移动cur_指针</p>
+<p>reset：重置cur_指针为数据开头的位置<br>bzero：清空缓冲区</p>
+<p>debugString：截断缓冲区</p>
+<p>toString：将缓冲区内容格式化为string对象返回<br>toStringPiece：将缓冲区内容格式化为StringPiece对象返回<br>end：返回data_最后的位置</p>
+</blockquote>
+<h4 id="LogStream"><a href="#LogStream" class="headerlink" title="LogStream"></a>LogStream</h4><blockquote>
+<p>封装的一个数据流</p>
+</blockquote>
+<p>提供一系列&lt;&lt;重载操作，若传入的数据大小小于4个字节或其他条件则会将其转化为int类型，再次调用&lt;&lt;操作，不过调用的操作会变成int类型数据的重载操作。</p>
+<blockquote>
+<p>self&amp; operator&lt;&lt;(const void*);将指针转换为16进制存入</p>
+</blockquote>
+<h4 id="简单函数"><a href="#简单函数" class="headerlink" title="简单函数"></a>简单函数</h4><blockquote>
+<p>append：直接向buffer_中添加数据<br>resetBuffer：重置缓冲区</p>
+<p>staticCheck：编译期断言，检查数据</p>
+</blockquote>
+<h4 id="formatInteger"><a href="#formatInteger" class="headerlink" title="formatInteger"></a>formatInteger</h4><blockquote>
+<p>将整形类的其他非字符数据类型，转换为字符类型，存入FixedBuffer缓冲区</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LogStream::formatInteger</span><span class="params">(T v)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (buffer_.avail() &gt;= kMaxNumericSize)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">size_t</span> len = convert(buffer_.current(), v);</span><br><span class="line">    buffer_.add(len);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">size_t</span> <span class="title">convert</span><span class="params">(<span class="keyword">char</span> buf[], T value)</span><span class="comment">//将其他数据转换为字符的函数，采用int转char类似的算法，即取模和除10</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  T i = value;</span><br><span class="line">  <span class="keyword">char</span>* p = buf;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">int</span> lsd = <span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(i % <span class="number">10</span>);</span><br><span class="line">    i /= <span class="number">10</span>;</span><br><span class="line">    *p++ = zero[lsd];</span><br><span class="line">  &#125; <span class="keyword">while</span> (i != <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (value &lt; <span class="number">0</span>)<span class="comment">//判断是否为负数</span></span><br><span class="line">  &#123;</span><br><span class="line">    *p++ = <span class="string">&#x27;-&#x27;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  *p = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">  <span class="built_in">std</span>::reverse(buf, p);<span class="comment">//因为求出的数据和原来的数据相反，所以需要反转</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> p - buf;<span class="comment">//返回增加了的长度</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="LogFile"><a href="#LogFile" class="headerlink" title="LogFile"></a>LogFile</h4><p><img src="/images/UML/LogFile.png" alt="LogFile"></p>
+<blockquote>
+<p>创建日志文件，名称为进程名+时间+进程id+进程所属用户+.log，时间为UTC时间。</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LogFile</span> :</span> noncopyable</span><br><span class="line">&#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  LogFile(<span class="keyword">const</span> <span class="built_in">string</span>&amp; basename,</span><br><span class="line">          <span class="keyword">off_t</span> rollSize,</span><br><span class="line">          <span class="keyword">bool</span> threadSafe = <span class="literal">true</span>,</span><br><span class="line">          <span class="keyword">int</span> flushInterval = <span class="number">3</span>,</span><br><span class="line">          <span class="keyword">int</span> checkEveryN = <span class="number">1024</span>);</span><br><span class="line">  ~LogFile();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">append</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* logline, <span class="keyword">int</span> len)</span></span>;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">flush</span><span class="params">()</span></span>;</span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="title">rollFile</span><span class="params">()</span></span>;<span class="comment">//滚动日志</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">append_unlocked</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* logline, <span class="keyword">int</span> len)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">static</span> <span class="built_in">string</span> <span class="title">getLogFileName</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span>&amp; basename, <span class="keyword">time_t</span>* now)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="built_in">string</span> basename_;<span class="comment">//文件名</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">off_t</span> rollSize_;<span class="comment">//单个日志文件的大小，达到rollSize_便新建日志文件</span></span><br><span class="line">  <span class="comment">//日志滚动条件：1.新的一天开始新建文件，2.日志文件达到最大的大小</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span> flushInterval_;<span class="comment">//日志写入的间隔时间</span></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span> checkEveryN_;<span class="comment">//与count_相比较，判断是否需要滚动日志</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">int</span> count_;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;MutexLock&gt; mutex_;</span><br><span class="line">  <span class="keyword">time_t</span> startOfPeriod_;<span class="comment">//开始记录日志的时间，始终会被调整到0点时间</span></span><br><span class="line">  <span class="keyword">time_t</span> lastRoll_;<span class="comment">//上一次新建文件的时间</span></span><br><span class="line">  <span class="keyword">time_t</span> lastFlush_;<span class="comment">//上一次日志写入的时间</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;FileUtil::AppendFile&gt; file_;<span class="comment">//文件指针</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">static</span> <span class="keyword">int</span> kRollPerSeconds_ = <span class="number">60</span>*<span class="number">60</span>*<span class="number">24</span>;<span class="comment">//一天的秒数</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="rollFile"><a href="#rollFile" class="headerlink" title="rollFile"></a>rollFile</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">LogFile::rollFile</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">time_t</span> now = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">string</span> filename = getLogFileName(basename_, &amp;now);</span><br><span class="line">  <span class="keyword">time_t</span> start = now / kRollPerSeconds_ * kRollPerSeconds_;<span class="comment">//将时间格式化为0点，除以kRollPerSeconds_除去0点后多余的数据，再乘kRollPerSeconds_变成当天0点时间</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (now &gt; lastRoll_)</span><br><span class="line">  &#123;</span><br><span class="line">    lastRoll_ = now;</span><br><span class="line">    lastFlush_ = now;</span><br><span class="line">    startOfPeriod_ = start;<span class="comment">//设置起始时间，后续在滚动日志时比较</span></span><br><span class="line">    file_.reset(<span class="keyword">new</span> FileUtil::AppendFile(filename));</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="append-unlocked"><a href="#append-unlocked" class="headerlink" title="append_unlocked"></a>append_unlocked</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LogFile::append_unlocked</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* logline, <span class="keyword">int</span> len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  file_-&gt;append(logline, len);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (file_-&gt;writtenBytes() &gt; rollSize_)</span><br><span class="line">  &#123;</span><br><span class="line">    rollFile();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    ++count_;</span><br><span class="line">    <span class="keyword">if</span> (count_ &gt;= checkEveryN_)</span><br><span class="line">    &#123;</span><br><span class="line">      count_ = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">time_t</span> now = ::time(<span class="literal">NULL</span>);</span><br><span class="line">      <span class="keyword">time_t</span> thisPeriod_ = now / kRollPerSeconds_ * kRollPerSeconds_;</span><br><span class="line">      <span class="keyword">if</span> (thisPeriod_ != startOfPeriod_)<span class="comment">//判断是否为第二天0点，不相等则是第二天</span></span><br><span class="line">      &#123;</span><br><span class="line">        rollFile();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (now - lastFlush_ &gt; flushInterval_)</span><br><span class="line">      &#123;</span><br><span class="line">        lastFlush_ = now;</span><br><span class="line">        file_-&gt;flush();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>append:调用append_unlocked向文件缓冲区中添加内容<br>flush:手动刷新文件缓冲区</p>
+<p>getLogFileName:设置日志文件名字</p>
+</blockquote>
+<h4 id="AppendFile"><a href="#AppendFile" class="headerlink" title="AppendFile"></a>AppendFile</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// not thread safe，非线程安全</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppendFile</span> :</span> noncopyable</span><br><span class="line">&#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">explicit</span> <span class="title">AppendFile</span><span class="params">(StringArg filename)</span></span>;</span><br><span class="line"></span><br><span class="line">  ~AppendFile();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">append</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* logline, <span class="keyword">size_t</span> len)</span></span>;<span class="comment">//将logline中的内容写入文件中</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">flush</span><span class="params">()</span></span>;<span class="comment">//刷新文件流</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">off_t</span> <span class="title">writtenBytes</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> writtenBytes_; &#125;<span class="comment">//返回写入的字节数</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">size_t</span> <span class="title">write</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* logline, <span class="keyword">size_t</span> len)</span></span>;</span><br><span class="line"></span><br><span class="line">  FILE* fp_;</span><br><span class="line">  <span class="keyword">char</span> buffer_[<span class="number">64</span>*<span class="number">1024</span>];<span class="comment">//文件缓冲区</span></span><br><span class="line">  <span class="keyword">off_t</span> writtenBytes_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="构造函数-1"><a href="#构造函数-1" class="headerlink" title="构造函数"></a>构造函数</h4><blockquote>
+<p>StringPiece提供了多个接口的构造函数</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">StringPiece()</span><br><span class="line">    : ptr_(<span class="literal">NULL</span>), length_(<span class="number">0</span>) &#123; &#125;<span class="comment">//默认构造函数</span></span><br><span class="line">  StringPiece(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span><br><span class="line">    : ptr_(str), length_(<span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(<span class="built_in">strlen</span>(ptr_))) &#123; &#125;</span><br><span class="line">  StringPiece(<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>* str)</span><br><span class="line">    : ptr_(<span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> <span class="keyword">char</span>*&gt;(str)),</span><br><span class="line">      length_(<span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(<span class="built_in">strlen</span>(ptr_))) &#123; &#125;</span><br><span class="line">  StringPiece(<span class="keyword">const</span> <span class="built_in">string</span>&amp; str)</span><br><span class="line">    : ptr_(str.data()), length_(<span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(str.size())) &#123; &#125;</span><br><span class="line">  StringPiece(<span class="keyword">const</span> <span class="keyword">char</span>* offset, <span class="keyword">int</span> len)<span class="comment">//传入一个地址和要构造字符串的长度</span></span><br><span class="line">    : ptr_(offset), length_(len) &#123; &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="cmp"><a href="#cmp" class="headerlink" title="cmp"></a>cmp</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> STRINGPIECE_BINARY_PREDICATE(cmp,auxcmp)                             \</span></span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="keyword">operator</span> <span class="title">cmp</span> <span class="params">(<span class="keyword">const</span> StringPiece&amp; x)</span> <span class="keyword">const</span> </span>&#123;                           \</span><br><span class="line">    <span class="keyword">int</span> r = <span class="built_in">memcmp</span>(ptr_, x.ptr_, length_ &lt; x.length_ ? length_ : x.length_); \</span><br><span class="line">    <span class="keyword">return</span> ((r auxcmp <span class="number">0</span>) || ((r == <span class="number">0</span>) &amp;&amp; (length_ cmp x.length_)));          \</span><br><span class="line">  &#125;</span><br><span class="line"><span class="comment">//宏函数</span></span><br><span class="line">  STRINGPIECE_BINARY_PREDICATE(&lt;,  &lt;);</span><br><span class="line">  STRINGPIECE_BINARY_PREDICATE(&lt;=, &lt;);</span><br><span class="line">  STRINGPIECE_BINARY_PREDICATE(&gt;=, &gt;);</span><br><span class="line">  STRINGPIECE_BINARY_PREDICATE(&gt;,  &gt;);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> STRINGPIECE_BINARY_PREDICATE</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>采用主从比较运算符来和类成员ptr_进行比较，先调用memcmp进行内存比较，长度为较短的那个字符串的长度，而后对r进行比较运算，采用从比较符，或运算有短路机制，以&lt;,&lt;为例，若r&lt;0，则可以直接返回真，表示ptr_小于x，若大于0进行后面的与运算，一样与运算有短路机制，r==0不成立直接返回假，ptr_大于x，若等于0，继续比较两个字符串长度，如果ptr-的长度校园x的长度，返回真，ptr_小于x，反之ptr_大于x。</p>
+</blockquote>
+<p>其余函数较简单，便不再列举</p>
+<h4 id="模板萃取技术"><a href="#模板萃取技术" class="headerlink" title="模板萃取技术"></a>模板萃取技术</h4><p>TODO:待补充</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> HAVE_TYPE_TRAITS</span></span><br><span class="line"><span class="comment">// This makes vector&lt;StringPiece&gt; really fast for some STL implementations#这使得vector&lt;StringPiece&gt;对于一些STL实现来说非常快</span></span><br><span class="line"><span class="keyword">template</span>&lt;&gt; <span class="class"><span class="keyword">struct</span> __<span class="title">type_traits</span>&lt;muduo::StringPiece&gt; &#123;</span><span class="comment">//__type_traits类型特性结构体</span></span><br><span class="line">  <span class="keyword">typedef</span> __true_type    has_trivial_default_constructor;<span class="comment">//模板传入的类（muduo::StringPiece）是否有不重要的构造，有则将其定义为__true_type</span></span><br><span class="line">  <span class="keyword">typedef</span> __true_type    has_trivial_copy_constructor;<span class="comment">//...是否有有拷贝函数...</span></span><br><span class="line">  <span class="keyword">typedef</span> __true_type    has_trivial_assignment_operator;<span class="comment">//...是否有拷贝函数...</span></span><br><span class="line">  <span class="keyword">typedef</span> __true_type    has_trivial_destructor;<span class="comment">//...是否有拥有析构函数..</span></span><br><span class="line">  <span class="keyword">typedef</span> __true_type    is_POD_type;<span class="comment">//该类是一个POD数据类型，即与C兼容的数据类型，上述条件满足就是一个POD数据类型</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>traits是c++模板编程中使用的一种技术，主要功能：</p>
+<p>把功能相同而参数不同的函数抽象出来，通过traits将不同的参数的相同属性提取出来，在函数中利用这些用traits提取的属性，使得函数对不同的参数表现一致。</p>
+<p>c++11 中 type_traits</p>
+<p>通过type_traits可以实现在编译期计算、查询、判断、转换和选择，增强了泛型编程的能力，也增强了程序的弹性，使得我们在编译期就能做到优化改进甚至排错，能进一步提高代码质量。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cpp/" rel="tag"> <i class="fa fa-tag"></i>Cpp</a>
+              <a href="/tags/muduo/" rel="tag"> <i class="fa fa-tag"></i>muduo</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/78a962ab/" rel="prev" title="muduo-ThreadLocal-and-ThreadLocalSingleton">
+      <i class="fa fa-chevron-left"></i> muduo-ThreadLocal-and-ThreadLocalSingleton
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/853b7e88/" rel="next" title="muduo-Date-and-TimeZone">
+      muduo-Date-and-TimeZone <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80OTUxMy8yNjAwNA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Logger"><span class="nav-number">1.</span> <span class="nav-text">Logger</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E4%BD%99%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">其余函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Impl"><span class="nav-number">4.</span> <span class="nav-text">Impl</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Fmt"><span class="nav-number">5.</span> <span class="nav-text">Fmt</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FixedBuffer"><span class="nav-number">6.</span> <span class="nav-text">FixedBuffer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0"><span class="nav-number">7.</span> <span class="nav-text">成员函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LogStream"><span class="nav-number">8.</span> <span class="nav-text">LogStream</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%87%BD%E6%95%B0"><span class="nav-number">9.</span> <span class="nav-text">简单函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#formatInteger"><span class="nav-number">10.</span> <span class="nav-text">formatInteger</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LogFile"><span class="nav-number">11.</span> <span class="nav-text">LogFile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rollFile"><span class="nav-number">12.</span> <span class="nav-text">rollFile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#append-unlocked"><span class="nav-number">13.</span> <span class="nav-text">append_unlocked</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AppendFile"><span class="nav-number">14.</span> <span class="nav-text">AppendFile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0-1"><span class="nav-number">15.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cmp"><span class="nav-number">16.</span> <span class="nav-text">cmp</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E8%90%83%E5%8F%96%E6%8A%80%E6%9C%AF"><span class="nav-number">17.</span> <span class="nav-text">模板萃取技术</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="allhw"
+      src="/images/1.jpg">
+  <p class="site-author-name" itemprop="name">allhw</p>
+  <div class="site-description" itemprop="description">logs for me</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wxl2" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wxl2" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:allhw@foxmail.com" title="E-Mail → mailto:allhw@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友链
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://zgao.top/" title="https:&#x2F;&#x2F;zgao.top" rel="noopener" target="_blank">zgao</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">allhw</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">156k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">2:22</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

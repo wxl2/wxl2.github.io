@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/1.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.allhw.top","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="源码及教程muduo源码:https:&#x2F;&#x2F;github.com&#x2F;chenshuo&#x2F;muduo.git教程：视频:https:&#x2F;&#x2F;www.bilibili.com&#x2F;video&#x2F;BV11b411q7zr?t&#x3D;2368&amp;p&#x3D;10对应配套材料:https:&#x2F;&#x2F;github.com&#x2F;iceCream1997&#x2F;muduo_server_learn作者博客:https:&#x2F;&#x2F;www.cnblogs.com">
+<meta property="og:type" content="article">
+<meta property="og:title" content="muduo网络库-Timestamp类">
+<meta property="og:url" content="https://www.allhw.top/posts/7808c5f/index.html">
+<meta property="og:site_name" content="allhw&#39;s blog">
+<meta property="og:description" content="源码及教程muduo源码:https:&#x2F;&#x2F;github.com&#x2F;chenshuo&#x2F;muduo.git教程：视频:https:&#x2F;&#x2F;www.bilibili.com&#x2F;video&#x2F;BV11b411q7zr?t&#x3D;2368&amp;p&#x3D;10对应配套材料:https:&#x2F;&#x2F;github.com&#x2F;iceCream1997&#x2F;muduo_server_learn作者博客:https:&#x2F;&#x2F;www.cnblogs.com">
+<meta property="og:locale">
+<meta property="og:image" content="https://www.allhw.top/images/UML/TimeStamp.png">
+<meta property="article:published_time" content="2020-06-29T04:16:57.000Z">
+<meta property="article:modified_time" content="2020-09-19T10:38:25.217Z">
+<meta property="article:author" content="allhw">
+<meta property="article:tag" content="Cpp">
+<meta property="article:tag" content="muduo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.allhw.top/images/UML/TimeStamp.png">
+
+<link rel="canonical" href="https://www.allhw.top/posts/7808c5f/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>muduo网络库-Timestamp类 | allhw's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">allhw's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Learning log of salted fish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://www.allhw.top/posts/7808c5f/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.jpg">
+      <meta itemprop="name" content="allhw">
+      <meta itemprop="description" content="logs for me">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="allhw's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          muduo网络库-Timestamp类
+        </h1>
+
+        <div class="post-meta">
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-06-29 12:16:57" itemprop="dateCreated datePublished" datetime="2020-06-29T12:16:57+08:00">2020-06-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-09-19 18:38:25" itemprop="dateModified" datetime="2020-09-19T18:38:25+08:00">2020-09-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BC%80%E6%BA%90%E4%BB%A3%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">开源代码</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="源码及教程"><a href="#源码及教程" class="headerlink" title="源码及教程"></a>源码及教程</h3><h4 id="muduo源码-https-github-com-chenshuo-muduo-git"><a href="#muduo源码-https-github-com-chenshuo-muduo-git" class="headerlink" title="muduo源码:https://github.com/chenshuo/muduo.git"></a>muduo源码:<a target="_blank" rel="noopener" href="https://github.com/chenshuo/muduo.git">https://github.com/chenshuo/muduo.git</a></h4><h4 id="教程："><a href="#教程：" class="headerlink" title="教程："></a>教程：</h4><h5 id="视频-https-www-bilibili-com-video-BV11b411q7zr-t-2368-amp-p-10"><a href="#视频-https-www-bilibili-com-video-BV11b411q7zr-t-2368-amp-p-10" class="headerlink" title="视频:https://www.bilibili.com/video/BV11b411q7zr?t=2368&amp;p=10"></a>视频:<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV11b411q7zr?t=2368&amp;p=10">https://www.bilibili.com/video/BV11b411q7zr?t=2368&amp;p=10</a></h5><h5 id="对应配套材料-https-github-com-iceCream1997-muduo-server-learn"><a href="#对应配套材料-https-github-com-iceCream1997-muduo-server-learn" class="headerlink" title="对应配套材料:https://github.com/iceCream1997/muduo_server_learn"></a>对应配套材料:<a target="_blank" rel="noopener" href="https://github.com/iceCream1997/muduo_server_learn">https://github.com/iceCream1997/muduo_server_learn</a></h5><h5 id="作者博客-https-www-cnblogs-com-Solstice"><a href="#作者博客-https-www-cnblogs-com-Solstice" class="headerlink" title="作者博客:https://www.cnblogs.com/Solstice/"></a>作者博客:<a target="_blank" rel="noopener" href="https://www.cnblogs.com/Solstice/">https://www.cnblogs.com/Solstice/</a></h5><a id="more"></a>
+
+<h3 id="Timestamp"><a href="#Timestamp" class="headerlink" title="Timestamp"></a>Timestamp</h3><blockquote>
+<p>Timestamp是一个时间戳转换类，获取unix时间戳并以微妙保存，并按照所需格式输出为年月日等.Tiimestamp公有继承于三个类</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> muduo::copyable,<span class="comment">//继承以表示类不能拷贝</span></span><br><span class="line"><span class="keyword">public</span> boost::equality_comparable&lt;Timestamp&gt;,<span class="comment">//继承使用此类可以只重写operator== ;!=会自动生成</span></span><br><span class="line"><span class="keyword">public</span> boost::less_than_comparable&lt;Timestamp&gt;<span class="comment">//继承使用此类可以只重写operator&lt; ;&lt;= ,&gt;会自动生成</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="UML图"><a href="#UML图" class="headerlink" title="UML图"></a>UML图</h4><p><img src="/images/UML/TimeStamp.png" alt="Timestamp"></p>
+<h4 id="简单成员函数"><a href="#简单成员函数" class="headerlink" title="简单成员函数"></a>简单成员函数</h4><blockquote>
+<p>Timestamp提供了两个构造函数一个无参默认设置微妙时间为0,一个参数为int64_t的构造函数可以使用静态成员函数now来获取时间戳并传入参数进行构造.valid函数用于判断成员变量的有效性(时间必须大于0).两个fromUnixTime函数用于将时间戳转化为微妙保存于成员变量.</p>
+</blockquote>
+<h4 id="now"><a href="#now" class="headerlink" title="now"></a>now</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//static Timestamp now();</span></span><br><span class="line"><span class="function">Timestamp <span class="title">Timestamp::now</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tv</span>;</span></span><br><span class="line">  gettimeofday(&amp;tv, <span class="literal">NULL</span>);<span class="comment">//第一个为时间结构体，第二个参数关于时区</span></span><br><span class="line">  <span class="keyword">int64_t</span> seconds = tv.tv_sec;</span><br><span class="line">  <span class="keyword">return</span> Timestamp(seconds * kMicroSecondsPerSecond + tv.tv_usec);<span class="comment">//返回的描述乘上倍数关系并加上返回的微妙数即可得到时间戳的微妙形式</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="toString-NaN"><a href="#toString-NaN" class="headerlink" title="toString"></a>toString</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">Timestamp::toString</span><span class="params">()</span> <span class="keyword">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> buf[<span class="number">32</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">  <span class="keyword">int64_t</span> seconds = microSecondsSinceEpoch_ / kMicroSecondsPerSecond;</span><br><span class="line">  <span class="keyword">int64_t</span> microseconds = microSecondsSinceEpoch_ % kMicroSecondsPerSecond;</span><br><span class="line">  <span class="built_in">snprintf</span>(buf, <span class="keyword">sizeof</span>(buf), <span class="string">&quot;%&quot;</span> PRId64 <span class="string">&quot;.%06&quot;</span> PRId64 <span class="string">&quot;&quot;</span>, seconds, microseconds);</span><br><span class="line">  <span class="keyword">return</span> buf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>将微妙转换为seconds.microseconds即秒.微妙,PRI是一个宏用于兼容32位平台和64位平台long大小不一样，在64位系统下PRI展开为ll，32位下则展开为l.</p>
+<p>输出示例:1593414211.736930</p>
+</blockquote>
+<h4 id="toFormattedString"><a href="#toFormattedString" class="headerlink" title="toFormattedString"></a>toFormattedString</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">Timestamp::toFormattedString</span><span class="params">(<span class="keyword">bool</span> showMicroseconds)</span> <span class="keyword">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> buf[<span class="number">64</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">  <span class="keyword">time_t</span> seconds = <span class="keyword">static_cast</span>&lt;<span class="keyword">time_t</span>&gt;(microSecondsSinceEpoch_ / kMicroSecondsPerSecond);</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">tm</span> <span class="title">tm_time</span>;</span></span><br><span class="line">  gmtime_r(&amp;seconds, &amp;tm_time);<span class="comment">//将时间戳转化为年月日，线程安全函数</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (showMicroseconds)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">int</span> microseconds = <span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(microSecondsSinceEpoch_ % kMicroSecondsPerSecond);</span><br><span class="line">    <span class="built_in">snprintf</span>(buf, <span class="keyword">sizeof</span>(buf), <span class="string">&quot;%4d%02d%02d %02d:%02d:%02d.%06d&quot;</span>,</span><br><span class="line">             tm_time.tm_year + <span class="number">1900</span>, tm_time.tm_mon + <span class="number">1</span>, tm_time.tm_mday,</span><br><span class="line">             tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec,</span><br><span class="line">             microseconds);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">snprintf</span>(buf, <span class="keyword">sizeof</span>(buf), <span class="string">&quot;%4d%02d%02d %02d:%02d:%02d&quot;</span>,</span><br><span class="line">             tm_time.tm_year + <span class="number">1900</span>, tm_time.tm_mon + <span class="number">1</span>, tm_time.tm_mday,</span><br><span class="line">             tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> buf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>showMicroseconds控制是否打印出微妙,输出示例:20200629 07:03:31.736930</p>
+</blockquote>
+<h4 id="非成员函数"><a href="#非成员函数" class="headerlink" title="非成员函数"></a>非成员函数</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="keyword">double</span> <span class="title">timeDifference</span><span class="params">(Timestamp high, Timestamp low)</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//用于计算两个时间差</span></span><br><span class="line">  <span class="keyword">int64_t</span> diff = high.microSecondsSinceEpoch() - low.microSecondsSinceEpoch();</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;<span class="keyword">double</span>&gt;(diff) / Timestamp::kMicroSecondsPerSecond;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> Timestamp <span class="title">addTime</span><span class="params">(Timestamp timestamp, <span class="keyword">double</span> seconds)</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//在原有的时间上加上seconds * Timestamp::kMicroSecondsPerSecond微妙</span></span><br><span class="line">  <span class="keyword">int64_t</span> delta = <span class="keyword">static_cast</span>&lt;<span class="keyword">int64_t</span>&gt;(seconds * Timestamp::kMicroSecondsPerSecond);</span><br><span class="line">  <span class="keyword">return</span> Timestamp(timestamp.microSecondsSinceEpoch() + delta);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="flamingo"><a href="#flamingo" class="headerlink" title="flamingo"></a>flamingo</h3><blockquote>
+<p>和muduo不同的是flamingo没有采用boost库因而代码移植性较好，且flamingo可跨平台，其成员函数实现也与muduo有所差异</p>
+</blockquote>
+<h4 id="now-1"><a href="#now-1" class="headerlink" title="now"></a>now</h4><blockquote>
+<p>flamingo使用c++标准库chrono来获取时间对成员变量进行初始化</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//static Timestamp now();</span></span><br><span class="line"><span class="function">Timestamp <span class="title">Timestamp::now</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	chrono::time_point&lt;chrono::system_clock, chrono::microseconds&gt; now = chrono::time_point_cast&lt;chrono::microseconds&gt;(</span><br><span class="line">		chrono::system_clock::now());</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int64_t</span> microSeconds = now.time_since_epoch().count();</span><br><span class="line">	<span class="function">Timestamp <span class="title">time</span><span class="params">(microSeconds)</span></span>;</span><br><span class="line">	<span class="keyword">return</span> time;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Timestamp类可以继续用于实现时间轮、日志系统等</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cpp/" rel="tag"> <i class="fa fa-tag"></i>Cpp</a>
+              <a href="/tags/muduo/" rel="tag"> <i class="fa fa-tag"></i>muduo</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/55f877b6/" rel="prev" title="Cpp中的各种引用">
+      <i class="fa fa-chevron-left"></i> Cpp中的各种引用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/d72bd296/" rel="next" title="muduo-Atimic-and-Type">
+      muduo-Atimic-and-Type <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80OTUxMy8yNjAwNA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%8F%8A%E6%95%99%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">源码及教程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#muduo%E6%BA%90%E7%A0%81-https-github-com-chenshuo-muduo-git"><span class="nav-number">1.1.</span> <span class="nav-text">muduo源码:https:&#x2F;&#x2F;github.com&#x2F;chenshuo&#x2F;muduo.git</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%99%E7%A8%8B%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">教程：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%A7%86%E9%A2%91-https-www-bilibili-com-video-BV11b411q7zr-t-2368-amp-p-10"><span class="nav-number">1.2.1.</span> <span class="nav-text">视频:https:&#x2F;&#x2F;www.bilibili.com&#x2F;video&#x2F;BV11b411q7zr?t&#x3D;2368&amp;p&#x3D;10</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AF%B9%E5%BA%94%E9%85%8D%E5%A5%97%E6%9D%90%E6%96%99-https-github-com-iceCream1997-muduo-server-learn"><span class="nav-number">1.2.2.</span> <span class="nav-text">对应配套材料:https:&#x2F;&#x2F;github.com&#x2F;iceCream1997&#x2F;muduo_server_learn</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%9C%E8%80%85%E5%8D%9A%E5%AE%A2-https-www-cnblogs-com-Solstice"><span class="nav-number">1.2.3.</span> <span class="nav-text">作者博客:https:&#x2F;&#x2F;www.cnblogs.com&#x2F;Solstice&#x2F;</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Timestamp"><span class="nav-number">2.</span> <span class="nav-text">Timestamp</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#UML%E5%9B%BE"><span class="nav-number">2.1.</span> <span class="nav-text">UML图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">简单成员函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#now"><span class="nav-number">2.3.</span> <span class="nav-text">now</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#toString-NaN"><span class="nav-number">2.4.</span> <span class="nav-text">toString</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#toFormattedString"><span class="nav-number">2.5.</span> <span class="nav-text">toFormattedString</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0"><span class="nav-number">2.6.</span> <span class="nav-text">非成员函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#flamingo"><span class="nav-number">3.</span> <span class="nav-text">flamingo</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#now-1"><span class="nav-number">3.1.</span> <span class="nav-text">now</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="allhw"
+      src="/images/1.jpg">
+  <p class="site-author-name" itemprop="name">allhw</p>
+  <div class="site-description" itemprop="description">logs for me</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wxl2" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wxl2" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:allhw@foxmail.com" title="E-Mail → mailto:allhw@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友链
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://zgao.top/" title="https:&#x2F;&#x2F;zgao.top" rel="noopener" target="_blank">zgao</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">allhw</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">156k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">2:22</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

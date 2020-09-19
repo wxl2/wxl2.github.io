@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/1.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.allhw.top","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="线程池和线程单例类模板以及SFINAE机制">
+<meta property="og:type" content="article">
+<meta property="og:title" content="muduo-ThreadPool-and-Singleton">
+<meta property="og:url" content="https://www.allhw.top/posts/7e079676/index.html">
+<meta property="og:site_name" content="allhw&#39;s blog">
+<meta property="og:description" content="线程池和线程单例类模板以及SFINAE机制">
+<meta property="og:locale">
+<meta property="og:image" content="https://www.allhw.top/images/UML/ThreadPool.png">
+<meta property="article:published_time" content="2020-09-19T11:29:42.000Z">
+<meta property="article:modified_time" content="2020-09-19T12:24:56.029Z">
+<meta property="article:author" content="allhw">
+<meta property="article:tag" content="Cpp">
+<meta property="article:tag" content="muduo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.allhw.top/images/UML/ThreadPool.png">
+
+<link rel="canonical" href="https://www.allhw.top/posts/7e079676/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>muduo-ThreadPool-and-Singleton | allhw's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">allhw's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Learning log of salted fish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://www.allhw.top/posts/7e079676/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.jpg">
+      <meta itemprop="name" content="allhw">
+      <meta itemprop="description" content="logs for me">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="allhw's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          muduo-ThreadPool-and-Singleton
+        </h1>
+
+        <div class="post-meta">
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-09-19 19:29:42 / Modified: 20:24:56" itemprop="dateCreated datePublished" datetime="2020-09-19T19:29:42+08:00">2020-09-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BC%80%E6%BA%90%E4%BB%A3%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">开源代码</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>5 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>线程池和线程单例类模板以及SFINAE机制</p>
+<a id="more"></a>
+
+<h4 id="ThreadPool"><a href="#ThreadPool" class="headerlink" title="ThreadPool"></a>ThreadPool</h4><p><img src="/images/UML/ThreadPool.png" alt="ThreadPool"></p>
+<blockquote>
+<p>线程池的本质是一个生产者消费者模型，产生任务的线程是生产者，线程池中的线程是消费者。当然，这不是绝对的，线程池中的线程处理一个任务以后可能会产生一个新的关联任务，那么此时这个工作线程又是生产者的角色。通常采用队列来实现线程池。</p>
+</blockquote>
+<p>定义一个函数包装器包装一类函数</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::function&lt;<span class="keyword">void</span> ()&gt; Task;</span><br></pre></td></tr></table></figure>
+
+<p>ThreadPool定义了两个条件变量，分别用来通知生产者和消费者。notFull_用于通知生产者线程任务队列不为空（消费者线程为唤醒生产者线程），notEmpty_用于通知消费者线程有任务可以执行（生产者线程为唤醒消费者线程），两个条件变量共用一个互斥量mutex_。threadInitCallback_为线程执行调用的初始化函数，按照需要进行设置调用。threads_存放线程指针，queue_为任务队列，maxQueueSize_为最大任务数，running_标志是否对线程池进行销毁。</p>
+<h4 id="start"><a href="#start" class="headerlink" title="start"></a>start</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ThreadPool::start</span><span class="params">(<span class="keyword">int</span> numThreads)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  assert(threads_.empty());</span><br><span class="line">  running_ = <span class="literal">true</span>;</span><br><span class="line">  threads_.reserve(numThreads);<span class="comment">//重新设置vector的大小</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numThreads; ++i)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">char</span> id[<span class="number">32</span>];</span><br><span class="line">    <span class="built_in">snprintf</span>(id, <span class="keyword">sizeof</span> id, <span class="string">&quot;%d&quot;</span>, i+<span class="number">1</span>);</span><br><span class="line">    threads_.emplace_back(<span class="keyword">new</span> muduo::Thread(</span><br><span class="line">          <span class="built_in">std</span>::bind(&amp;ThreadPool::runInThread, <span class="keyword">this</span>), name_+id));<span class="comment">//构建线程池，创建numThreads个消费者线程</span></span><br><span class="line">    threads_[i]-&gt;start();<span class="comment">//启动每个消费者线程 Thread::start()</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (numThreads == <span class="number">0</span> &amp;&amp; threadInitCallback_)<span class="comment">//按照自己的需要进行线程初始化设置</span></span><br><span class="line">  &#123;</span><br><span class="line">    threadInitCallback_();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="stop"><a href="#stop" class="headerlink" title="stop"></a>stop</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ThreadPool::stop</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  &#123;</span><br><span class="line">  <span class="function">MutexLockGuard <span class="title">lock</span><span class="params">(mutex_)</span></span>;</span><br><span class="line">  running_ = <span class="literal">false</span>;<span class="comment">//将running_置为false并唤醒所有等待线程</span></span><br><span class="line">  notEmpty_.notifyAll();</span><br><span class="line">  notFull_.notifyAll();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; thr : threads_)</span><br><span class="line">  &#123;</span><br><span class="line">    thr-&gt;join();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="run"><a href="#run" class="headerlink" title="run"></a>run</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ThreadPool::run</span><span class="params">(Task task)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (threads_.empty())<span class="comment">//如果没有可用线程，直接在当前线程执行任务</span></span><br><span class="line">  &#123;</span><br><span class="line">    task();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    MutexLockGuard lock(mutex_);</span><br><span class="line">    <span class="keyword">while</span> (isFull() &amp;&amp; running_)</span><br><span class="line">    &#123;</span><br><span class="line">      notFull_.wait();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!running_) <span class="keyword">return</span>;</span><br><span class="line">    assert(!isFull());<span class="comment">//当任务队列大小大于maxQueueSize_时返回ture取反为false程序断言，意思为产生的任务队列大小不能大于初始设置的认为队列大小</span></span><br><span class="line"></span><br><span class="line">    queue_.push_back(<span class="built_in">std</span>::move(task));</span><br><span class="line">    notEmpty_.notify();<span class="comment">//唤醒一个消费者线程</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="isFull"><a href="#isFull" class="headerlink" title="isFull"></a>isFull</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">ThreadPool::isFull</span><span class="params">()</span> <span class="keyword">const</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//assert在条件为false时断言</span></span><br><span class="line">  mutex_.assertLocked();</span><br><span class="line">  <span class="keyword">return</span> maxQueueSize_ &gt; <span class="number">0</span> &amp;&amp; queue_.size() &gt;= maxQueueSize_;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="runInThread"><a href="#runInThread" class="headerlink" title="runInThread"></a>runInThread</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//简化</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ThreadPool::runInThread</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">try</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (threadInitCallback_)</span><br><span class="line">    &#123;</span><br><span class="line">      threadInitCallback_();<span class="comment">//如果设置了线程初始化函数则执行</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (running_)<span class="comment">//标志为true则表示线程池还在运行没有销毁</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="function">Task <span class="title">task</span><span class="params">(take())</span></span>;<span class="comment">//从任务队列取出一个任务</span></span><br><span class="line">      <span class="keyword">if</span> (task)<span class="comment">//有任务则执行</span></span><br><span class="line">      &#123;</span><br><span class="line">        task();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (<span class="keyword">const</span> Exception&amp; ex)</span><br><span class="line">  &#123;...&#125;</span><br><span class="line">  <span class="keyword">catch</span> (<span class="keyword">const</span> <span class="built_in">std</span>::exception&amp; ex)</span><br><span class="line">  &#123;...&#125;</span><br><span class="line">  <span class="keyword">catch</span> (...)</span><br><span class="line">  &#123;...&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="take"><a href="#take" class="headerlink" title="take"></a>take</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ThreadPool::Task <span class="title">ThreadPool::take</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="function">MutexLockGuard <span class="title">lock</span><span class="params">(mutex_)</span></span>;</span><br><span class="line">  <span class="comment">// always use a while-loop, due to spurious wakeup</span></span><br><span class="line">  <span class="keyword">while</span> (queue_.empty() &amp;&amp; running_)<span class="comment">//若任务队列为空且线程池仍在运行，则唤醒生产者</span></span><br><span class="line">  &#123;</span><br><span class="line">    notEmpty_.wait();</span><br><span class="line">  &#125;</span><br><span class="line">  Task task;</span><br><span class="line">  <span class="keyword">if</span> (!queue_.empty())</span><br><span class="line">  &#123;</span><br><span class="line">    task = queue_.front();</span><br><span class="line">    queue_.pop_front();</span><br><span class="line">    <span class="keyword">if</span> (maxQueueSize_ &gt; <span class="number">0</span>)<span class="comment">//如果设置的任务队列大于0则通知生产者进行生产，生产者被唤醒后判断条件是否进行生产</span></span><br><span class="line">    &#123;</span><br><span class="line">      notFull_.notify();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> task;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="muduo作者提供的测试"><a href="#muduo作者提供的测试" class="headerlink" title="muduo作者提供的测试"></a>muduo作者提供的测试</h4><h5 id="test"><a href="#test" class="headerlink" title="test"></a>test</h5><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">(<span class="keyword">int</span> maxSize)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  LOG_WARN &lt;&lt; <span class="string">&quot;Test ThreadPool with max queue size = &quot;</span> &lt;&lt; maxSize;</span><br><span class="line">  <span class="function">muduo::ThreadPool <span class="title">pool</span><span class="params">(<span class="string">&quot;MainThreadPool&quot;</span>)</span></span>;</span><br><span class="line">  pool.setMaxQueueSize(maxSize);</span><br><span class="line">  pool.start(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">  LOG_WARN &lt;&lt; <span class="string">&quot;Adding&quot;</span>;</span><br><span class="line">  pool.run(print);</span><br><span class="line">  pool.run(print);<span class="comment">//在调用 pool.stop()之前这个线程会一直执行</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; ++i)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">char</span> buf[<span class="number">32</span>];</span><br><span class="line">    <span class="built_in">snprintf</span>(buf, <span class="keyword">sizeof</span> buf, <span class="string">&quot;task %d&quot;</span>, i);</span><br><span class="line">    pool.run(<span class="built_in">std</span>::bind(printString, <span class="built_in">std</span>::<span class="built_in">string</span>(buf)));</span><br><span class="line">  &#125;</span><br><span class="line">  LOG_WARN &lt;&lt; <span class="string">&quot;Done&quot;</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function">muduo::CountDownLatch <span class="title">latch</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">  pool.run(<span class="built_in">std</span>::bind(&amp;muduo::CountDownLatch::countDown, &amp;latch));</span><br><span class="line">  latch.wait();</span><br><span class="line">  pool.stop();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a>Singleton</h3><blockquote>
+<p>在多个线程中保证一个类只创建一次</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> :</span> noncopyable</span><br><span class="line">&#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  Singleton() = <span class="keyword">delete</span>;</span><br><span class="line">  ~Singleton() = <span class="keyword">delete</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">static</span> T&amp; <span class="title">instance</span><span class="params">()</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    pthread_once(&amp;ponce_, &amp;Singleton::init);</span><br><span class="line">    assert(value_ != <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> *value_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    value_ = <span class="keyword">new</span> T();</span><br><span class="line">    <span class="keyword">if</span> (!detail::has_no_destroy&lt;T&gt;::value)</span><br><span class="line">    &#123;</span><br><span class="line">      ::atexit(destroy);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">char</span> T_must_be_complete_type[<span class="keyword">sizeof</span>(T) == <span class="number">0</span> ? <span class="number">-1</span> : <span class="number">1</span>];</span><br><span class="line">    T_must_be_complete_type dummy; (<span class="keyword">void</span>) dummy;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> value_;</span><br><span class="line">    value_ = <span class="literal">NULL</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">pthread_once_t</span> ponce_;</span><br><span class="line">  <span class="keyword">static</span> T*             value_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">pthread_once_t</span> Singleton&lt;T&gt;::ponce_ = PTHREAD_ONCE_INIT;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">T* Singleton&lt;T&gt;::value_ = <span class="literal">NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<p><a href="https://www.allhw.top/2020/06/02/FlamingoServer%E5%BC%80%E6%BA%90%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB-base%E7%9B%AE%E5%BD%95/#%E5%8D%95%E4%BE%8B%E6%A8%A1%E6%9D%BF%E7%B1%BB"><a href="https://www.allhw.top/posts/4f56f208/#%E5%8D%95%E4%BE%8B%E6%A8%A1%E6%9D%BF%E7%B1%BB">之前的一个单例模板类</a></a></p>
+<p>此处若有两个线程同时调用Singleton::Instance()会出现创建出两个类的情况:</p>
+<blockquote>
+<p>第一个线程执行到Instance函数的函数体内刚判断完条件准备执行value_ = new T()来创建一个类时切换到第二个线程，假设第二个线程一直执行到创建结束后切换到第一个线程，此时第一个线程继续执行又创建了一个类但是由于 value_是static变量只存在一个所以第二个线程设置的值会被覆盖，造成内存泄漏。</p>
+</blockquote>
+<h4 id="pthread-once"><a href="#pthread-once" class="headerlink" title="pthread_once"></a>pthread_once</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line">int pthread_once(pthread_once_t *once_control, void (*init_routine) (void))；</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>功能：pthread_once函数使用初值为PTHREAD_ONCE_INIT的once_control变量保证init_routine()函数在本进程执行序列中仅执行一次。</p>
+</blockquote>
+<h4 id="atexit"><a href="#atexit" class="headerlink" title="atexit"></a>atexit</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">atexit</span><span class="params">(<span class="keyword">void</span> (*function)(<span class="keyword">void</span>))</span></span>;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>功 能: 注册终止函数(即main执行结束后调用的函数)</p>
+</blockquote>
+<h4 id="将运行期的错误移至编译期检查"><a href="#将运行期的错误移至编译期检查" class="headerlink" title="将运行期的错误移至编译期检查"></a>将运行期的错误移至编译期检查</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">char</span> T_must_be_complete_type[<span class="keyword">sizeof</span>(T) == <span class="number">0</span> ? <span class="number">-1</span> : <span class="number">1</span>];</span><br><span class="line">T_must_be_complete_type dummy; (<span class="keyword">void</span>) dummy;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>sizeof的值在编译期便决定，c++中不能定义一个大小为-1的数组，若定义了在编译期便会报错。这样做的目标是为了防止将空类传入模板进行实例化，</p>
+<p>GCC对于incomplete type使用sizeof时，会返回0(当前直接会编译出错).那什么又叫做incomplete type呢，就是那些声明了，但没有定义的类型</p>
+</blockquote>
+<h4 id="SFINAE机制"><a href="#SFINAE机制" class="headerlink" title="SFINAE机制"></a>SFINAE机制</h4><blockquote>
+<p>SFINAE机制是模板元编程中的一种手法，在boost和标准库中有着大量的使用。</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> detail</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">has_no_destroy</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt; <span class="function"><span class="keyword">static</span> <span class="keyword">char</span> <span class="title">test</span><span class="params">(<span class="keyword">decltype</span>(&amp;C::no_destroy))</span></span>;</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C&gt; <span class="function"><span class="keyword">static</span> <span class="keyword">int32_t</span> <span class="title">test</span><span class="params">(...)</span></span>;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">static</span> <span class="keyword">bool</span> value = <span class="keyword">sizeof</span>(test&lt;T&gt;(<span class="number">0</span>)) == <span class="number">1</span>;</span><br><span class="line">&#125;;</span><br><span class="line">&#125;  <span class="comment">// namespace detail</span></span><br><span class="line"></span><br><span class="line">detail::has_no_destroy&lt;T&gt;::value</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>c++中模板的实例化会从多个模板中找出一个相匹配的模板来进行实例化且若有匹配的模板那么之前所匹配失败的模板即使有报错也不会停止编译，如这里的test(0)，进行实例化首先匹配static char test(decltype(&amp;C::no_destroy)若C类型不存在no_destroy函数则匹配失败且若只有这一个模板则会报错，接着便会向下继续匹配static int32_t test(…)是一个可变参数函数接受所有参数，模板匹配成功不报错。至于这个匹配机制为和如此，原因是：当前实例化的数据没有no_destroy函数不代表其他数据没有该函数，所以模板是正确的，并且T这个类型正确匹配到了一个模板因而不会报错。</p>
+</blockquote>
+<blockquote>
+<p>对于sizeof，其若对函数进行求值，得出的大小为函数返回值的大小，如 int32_t test(…);，sizeof这个函数得到的值为4</p>
+</blockquote>
+<blockquote>
+<p>对于可变参数函数，在C中编译器要求可变参数函数必须有一个提供了数据类型的参数，例如:int func(type a,…);这样是可行的，而int func(…)这样是不可行的，而在c++中要求并没有这么严格int func(…)也是可行的。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Cpp/" rel="tag"> <i class="fa fa-tag"></i>Cpp</a>
+              <a href="/tags/muduo/" rel="tag"> <i class="fa fa-tag"></i>muduo</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/2da75404/" rel="prev" title="muduo-BlockingQueue-and-BoundedBlockingQueue">
+      <i class="fa fa-chevron-left"></i> muduo-BlockingQueue-and-BoundedBlockingQueue
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/78a962ab/" rel="next" title="muduo-ThreadLocal-and-ThreadLocalSingleton">
+      muduo-ThreadLocal-and-ThreadLocalSingleton <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80OTUxMy8yNjAwNA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#ThreadPool"><span class="nav-number">1.</span> <span class="nav-text">ThreadPool</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#start"><span class="nav-number">2.</span> <span class="nav-text">start</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#stop"><span class="nav-number">3.</span> <span class="nav-text">stop</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#run"><span class="nav-number">4.</span> <span class="nav-text">run</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#isFull"><span class="nav-number">5.</span> <span class="nav-text">isFull</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#runInThread"><span class="nav-number">6.</span> <span class="nav-text">runInThread</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#take"><span class="nav-number">7.</span> <span class="nav-text">take</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#muduo%E4%BD%9C%E8%80%85%E6%8F%90%E4%BE%9B%E7%9A%84%E6%B5%8B%E8%AF%95"><span class="nav-number">8.</span> <span class="nav-text">muduo作者提供的测试</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#test"><span class="nav-number">8.1.</span> <span class="nav-text">test</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Singleton"><span class="nav-number"></span> <span class="nav-text">Singleton</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pthread-once"><span class="nav-number">1.</span> <span class="nav-text">pthread_once</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#atexit"><span class="nav-number">2.</span> <span class="nav-text">atexit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B0%86%E8%BF%90%E8%A1%8C%E6%9C%9F%E7%9A%84%E9%94%99%E8%AF%AF%E7%A7%BB%E8%87%B3%E7%BC%96%E8%AF%91%E6%9C%9F%E6%A3%80%E6%9F%A5"><span class="nav-number">3.</span> <span class="nav-text">将运行期的错误移至编译期检查</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SFINAE%E6%9C%BA%E5%88%B6"><span class="nav-number">4.</span> <span class="nav-text">SFINAE机制</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="allhw"
+      src="/images/1.jpg">
+  <p class="site-author-name" itemprop="name">allhw</p>
+  <div class="site-description" itemprop="description">logs for me</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wxl2" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wxl2" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:allhw@foxmail.com" title="E-Mail → mailto:allhw@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友链
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://zgao.top/" title="https:&#x2F;&#x2F;zgao.top" rel="noopener" target="_blank">zgao</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">allhw</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">156k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">2:22</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
