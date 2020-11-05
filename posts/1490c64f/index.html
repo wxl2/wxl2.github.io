@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/1.jpg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.allhw.top","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="关于MySQL中文字符乱码问题十分常见,多出现于windwos客户端编程,这里使用Linux还原出各种乱码场景并说出如何解决. 先决条件:安装好MySQL,安装文档:Windows,Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL中文乱码问题">
+<meta property="og:url" content="https://www.allhw.top/posts/1490c64f/index.html">
+<meta property="og:site_name" content="allhw&#39;s blog">
+<meta property="og:description" content="关于MySQL中文字符乱码问题十分常见,多出现于windwos客户端编程,这里使用Linux还原出各种乱码场景并说出如何解决. 先决条件:安装好MySQL,安装文档:Windows,Linux">
+<meta property="og:locale">
+<meta property="og:image" content="https://www.allhw.top/images/1490c64f/right.png">
+<meta property="og:image" content="https://www.allhw.top/images/1490c64f/gbk.png">
+<meta property="og:image" content="https://www.allhw.top/images/1490c64f/cppright.png">
+<meta property="og:image" content="https://www.allhw.top/images/1490c64f/gbkerror.png">
+<meta property="og:image" content="https://www.allhw.top/images/1490c64f/gbkerror.png">
+<meta property="og:image" content="https://www.allhw.top/images/1490c64f/insertgbk.png">
+<meta property="article:published_time" content="2020-11-05T05:26:20.000Z">
+<meta property="article:modified_time" content="2020-11-05T07:43:29.928Z">
+<meta property="article:author" content="allhw">
+<meta property="article:tag" content="mysql">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.allhw.top/images/1490c64f/right.png">
+
+<link rel="canonical" href="https://www.allhw.top/posts/1490c64f/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>MySQL中文乱码问题 | allhw's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">allhw's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Learning log of salted fish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="https://www.allhw.top/posts/1490c64f/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/1.jpg">
+      <meta itemprop="name" content="allhw">
+      <meta itemprop="description" content="logs for me">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="allhw's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL中文乱码问题
+        </h1>
+
+        <div class="post-meta">
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-11-05 13:26:20 / Modified: 15:43:29" itemprop="dateCreated datePublished" datetime="2020-11-05T13:26:20+08:00">2020-11-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/note/" itemprop="url" rel="index"><span itemprop="name">note</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.6k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>关于MySQL中文字符乱码问题十分常见,多出现于windwos客户端编程,这里使用Linux还原出各种乱码场景并说出如何解决.</p>
+<p>先决条件:安装好MySQL,安装文档:<a href="https://www.allhw.top/posts/fcb57d42/#MySQL%E9%85%8D%E7%BD%AE">Windows</a>,<a href="https://www.allhw.top/posts/cf6a0fee/">Linux</a></p>
+<a id="more"></a>
+
+<p>关于解决MySQL中文乱码的问题,互联网上有着大量优秀的文章,这里参考了以下大佬的文章:</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wj-1314/p/9147166.html">https://www.cnblogs.com/wj-1314/p/9147166.html</a></p>
+<p><a target="_blank" rel="noopener" href="http://cenalulu.github.io/mysql/mysql-mojibake/">http://cenalulu.github.io/mysql/mysql-mojibake/</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/chengxuyuanyonghu/article/details/70147023">https://blog.csdn.net/chengxuyuanyonghu/article/details/70147023</a></p>
+<p>可以先看下这些文章一般就能大致了解MySQL乱码原因及相应的解决办法.</p>
+<h3 id="MySQL乱码的几种情况"><a href="#MySQL乱码的几种情况" class="headerlink" title="MySQL乱码的几种情况"></a>MySQL乱码的几种情况</h3><p>在开始之前先做好准备工作,创建一个student表,SQL语句为</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> <span class="string">`student`</span>(</span><br><span class="line">   <span class="string">`id`</span> <span class="built_in">INT</span> <span class="keyword">UNSIGNED</span> AUTO_INCREMENT,</span><br><span class="line">   <span class="string">`name`</span> <span class="built_in">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">   PRIMARY <span class="keyword">KEY</span> ( <span class="string">`id`</span> )</span><br><span class="line">)<span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-显示层面问题"><a href="#1-显示层面问题" class="headerlink" title="1.显示层面问题"></a>1.显示层面问题</h4><p>问题大概为使用MySQL客户端工具时执行SQL语句插入中文后,select乱码,这种问题的原因在于终端的字符编码问题,如:</p>
+<p>首先列出一个正常的<img src="/images/1490c64f/right.png" alt="正确显示的"></p>
+<p>此时显示的是正常的,并且此时终端的编码为UTF-8,但如果一旦将终端显示编码修改不是utf-8,如此处修改为gbk<img src="/images/1490c64f/gbk.png" alt="gbk">,将终端字符改回utf-8即可显示正常.</p>
+<p>此时MySQL内部的字符集为</p>
+<blockquote>
+<p>mysql&gt; show variables like ‘%char%’;<br>+————————–+——————————————————————–+<br>| Variable_name            | Value                                                              |<br>+————————–+——————————————————————–+<br>| character_set_client     | utf8                                                               |<br>| character_set_connection | utf8                                                               |<br>| character_set_database   | latin1                                                             |<br>| character_set_filesystem | binary                                                             |<br>| character_set_results    | utf8                                                               |<br>| character_set_server     | latin1                                                             |<br>| character_set_system     | utf8                                                               |<br>| character_sets_dir       | /home/wxl/date/mysql-5.7.28-linux-glibc2.12-x86_64/share/charsets/ |<br>+————————–+——————————————————————–+<br>8 rows in set (0.01 sec)</p>
+</blockquote>
+<h4 id="2-进行数据库开发时的乱码问题"><a href="#2-进行数据库开发时的乱码问题" class="headerlink" title="2.进行数据库开发时的乱码问题"></a>2.进行数据库开发时的乱码问题</h4><p>第二中问题也是比较常见的一种问题,产生的原因,前面的文章中也有做解释的,这里大致说下:就是客户端与服务器端所采用的字符集编码不同,在字符集进行转换时导致一部分数据丢失造成的乱码,如下面有一个C库操作MySQL的程序</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;mysql.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	MYSQL* m_Mysql;</span><br><span class="line">	m_Mysql=mysql_init(<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span> (m_Mysql != <span class="literal">NULL</span> &amp;&amp; mysql_real_connect(m_Mysql, <span class="string">&quot;127.0.0.1&quot;</span>, <span class="string">&quot;root&quot;</span>, <span class="string">&quot;55555&quot;</span>, <span class="string">&quot;test&quot;</span>, <span class="number">3306</span>, <span class="literal">NULL</span>, <span class="number">0</span>))<span class="comment">//使用API连接数据库</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (!mysql_select_db(m_Mysql,<span class="string">&quot;test&quot;</span>))<span class="comment">//选择数据库</span></span><br><span class="line"></span><br><span class="line">		&#123;</span><br><span class="line">			mysql_query(m_Mysql, <span class="string">&quot;set names utf8&quot;</span>);<span class="comment">//设置字符编码，避免中文乱码</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	MYSQL_RES* result = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">uint64_t</span> rowCount = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">uint32_t</span> fieldCount = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span>(mysql_query(m_Mysql,<span class="string">&quot;select * from student&quot;</span>)&lt;<span class="number">0</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	result = mysql_store_result(m_Mysql);</span><br><span class="line">	<span class="comment">//cout&lt;&lt;(char*)mysql_error(m_Mysql)&lt;&lt;endl;//执行有误时的错误输出</span></span><br><span class="line">	rowCount = mysql_affected_rows(m_Mysql);</span><br><span class="line">	fieldCount = mysql_field_count(m_Mysql);</span><br><span class="line">	MYSQL_FIELD *fields = mysql_fetch_fields(result);</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">uint32_t</span> i=<span class="number">0</span>;i&lt;fieldCount;i++)</span><br><span class="line">		<span class="built_in">cout</span>&lt;&lt;fields[i].name&lt;&lt;<span class="string">&quot;\t&quot;</span>;</span><br><span class="line">	<span class="built_in">cout</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;rowCount;++i)</span><br><span class="line">	&#123;</span><br><span class="line">		MYSQL_ROW row = mysql_fetch_row(result);</span><br><span class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>;j&lt;fieldCount;++j)</span><br><span class="line">			<span class="built_in">cout</span>&lt;&lt;row[j]&lt;&lt;<span class="string">&quot;\t&quot;</span>;</span><br><span class="line">		<span class="built_in">cout</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	mysql_close(m_Mysql);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在的字符集:</p>
+<p>mysql&gt; show variables like ‘%char%’;</p>
+<blockquote>
+<p>+————————–+——————————————————————–+<br>| Variable_name            | Value                                                              |<br>+————————–+——————————————————————–+<br>| character_set_client     | utf8                                                               |<br>| character_set_connection | utf8                                                               |<br>| character_set_database   | latin1                                                             |<br>| character_set_filesystem | binary                                                             |<br>| character_set_results    | utf8                                                               |<br>| character_set_server     | latin1                                                             |<br>| character_set_system     | utf8                                                               |<br>| character_sets_dir       | /home/wxl/date/mysql-5.7.28-linux-glibc2.12-x86_64/share/charsets/ |<br>+————————–+——————————————————————–+<br>8 rows in set (0.01 sec)</p>
+</blockquote>
+<p>此时的输出是正确输出<img src="/images/1490c64f/cppright.png" alt="cpp的正确显示"></p>
+<p>此时将连接时设置的字符集合设置为gbk</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql_query(m_Mysql, <span class="string">&quot;set names gbk&quot;</span>);<span class="comment">//设置字符编码，避免中文乱码</span></span><br></pre></td></tr></table></figure>
+
+<p>结果如下<img src="/images/1490c64f/gbkerror.png" alt="gbkError"></p>
+<p>在此时的情况下若将mysqlserver端的connection编码设置为gbk(connection为编程时mysqlserver返回的字符集编码),会出现以下情况.执行<code>set names &#39;gbk&#39;</code></p>
+<p>结果同样是乱码<img src="/images/1490c64f/gbkerror.png" alt="gbkError">,但是如果将student的表的字符编码改为gbk,会如何,执行<code>ALTER TABLE student CONVERT TO CHARACTER SET  gbk</code>，并插入一条数据<img src="/images/1490c64f/insertgbk.png" alt="insertgbk"></p>
+<p>那么出现这些情况的原因是什么呢,结合第三次修改显示正确的李四来看,可以得出:</p>
+<blockquote>
+<p>第一次乱码的原因为:mysqlServer端返回数据的字符集为utf-8,而client端使用gbk编码来接收两种编码之间的转换导致的乱码.</p>
+<p>第二次乱码:此时mysqlserver和client字符编码统一但仍然发生乱码,这里结合地三个操作可以知道,student表在最初创建时的编码为utf8,所以插入的张三是使用utf8编码所保存的,这次乱码出现的地点是在mysqlserver端,因为张三原本是utf8编码,但server返回的是gbk,将utf8字符编码的数据直接保存在gbk编码中当然会乱码,在修改了student表的编码后再插入数据不会乱码,证实了这一点.</p>
+</blockquote>
+<h3 id="END"><a href="#END" class="headerlink" title="END"></a>END</h3><p>最后对于mysql乱码的问题最好的办法就是使用配置文件将编码统一设置为utf8.</p>
+<p>目前所能想到的乱码问题就这么多,如果还有其他的情况,欢迎找我py.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mysql/" rel="tag"> <i class="fa fa-tag"></i>mysql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/11956f4/" rel="prev" title="muduo-ProcessInfo-and-GzipFile">
+      <i class="fa fa-chevron-left"></i> muduo-ProcessInfo-and-GzipFile
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80OTUxMy8yNjAwNA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#MySQL%E4%B9%B1%E7%A0%81%E7%9A%84%E5%87%A0%E7%A7%8D%E6%83%85%E5%86%B5"><span class="nav-number">1.</span> <span class="nav-text">MySQL乱码的几种情况</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E6%98%BE%E7%A4%BA%E5%B1%82%E9%9D%A2%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.</span> <span class="nav-text">1.显示层面问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%BF%9B%E8%A1%8C%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%80%E5%8F%91%E6%97%B6%E7%9A%84%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.</span> <span class="nav-text">2.进行数据库开发时的乱码问题</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#END"><span class="nav-number">2.</span> <span class="nav-text">END</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="allhw"
+      src="/images/1.jpg">
+  <p class="site-author-name" itemprop="name">allhw</p>
+  <div class="site-description" itemprop="description">logs for me</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wxl2" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wxl2" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:allhw@foxmail.com" title="E-Mail → mailto:allhw@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友链
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://zgao.top/" title="https:&#x2F;&#x2F;zgao.top" rel="noopener" target="_blank">zgao</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">allhw</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">160k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">2:25</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
