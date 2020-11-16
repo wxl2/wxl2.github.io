@@ -28,7 +28,7 @@
 <meta property="og:description" content="下载1wget https:&#x2F;&#x2F;dev.mysql.com&#x2F;get&#x2F;Downloads&#x2F;MySQL-5.7&#x2F;mysql-5.7.28-linux-glibc2.12-x86_64.tar.gz">
 <meta property="og:locale">
 <meta property="article:published_time" content="2020-01-09T08:28:00.000Z">
-<meta property="article:modified_time" content="2020-09-19T10:38:25.217Z">
+<meta property="article:modified_time" content="2020-11-08T08:26:32.030Z">
 <meta property="article:author" content="allhw">
 <meta property="article:tag" content="mysql">
 <meta name="twitter:card" content="summary">
@@ -226,7 +226,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-09-19 18:38:25" itemprop="dateModified" datetime="2020-09-19T18:38:25+08:00">2020-09-19</time>
+                <time title="Modified: 2020-11-08 16:26:32" itemprop="dateModified" datetime="2020-11-08T16:26:32+08:00">2020-11-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -251,7 +251,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>1.8k</span>
+              <span>1.9k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
@@ -299,7 +299,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bin/mysql_ssl_rsa_setup</span><br><span class="line">bin/mysql_ssl_rsa_setup --datadir=/usr/<span class="built_in">local</span>/mysql/data</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>编辑配置文件</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/my.cnf</span><br><span class="line"></span><br><span class="line">[client]</span><br><span class="line">port = 3306</span><br><span class="line">socket = /tmp/mysql.sock</span><br><span class="line">default-character-set=utf8</span><br><span class="line"></span><br><span class="line">[mysqld]</span><br><span class="line">port = 3306</span><br><span class="line">socket = /tmp/mysql.sock</span><br><span class="line">basedir = /home/wxl/date/mysql </span><br><span class="line">datadir = /home/wxl/date/mysql/data</span><br><span class="line">user = mysql</span><br><span class="line">default-storage-engine=InnoDB</span><br><span class="line"></span><br><span class="line">[mysqld_safe]</span><br><span class="line">log-error=/home/wxl/date/mysql/data/mysql-error.log</span><br><span class="line">pid-file=//home/wxl/date/mysql/data/mysqld.pid</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/my.cnf</span><br><span class="line"></span><br><span class="line">[client]</span><br><span class="line">port = 3306</span><br><span class="line">socket = /tmp/mysql.sock</span><br><span class="line">default-character-set=utf8</span><br><span class="line"></span><br><span class="line">[mysqld]</span><br><span class="line">port = 3306</span><br><span class="line">socket = /tmp/mysql.sock</span><br><span class="line">basedir = /home/wxl/date/mysql </span><br><span class="line">datadir = /home/wxl/date/mysql/data</span><br><span class="line">user = mysql</span><br><span class="line">default-storage-engine=InnoDB</span><br><span class="line">character_set_server =utf8</span><br><span class="line"><span class="comment">#建库时默认字符集</span></span><br><span class="line">collation-server=utf8_general_ci</span><br><span class="line">[mysqld_safe]</span><br><span class="line">log-error=/home/wxl/date/mysql/data/mysql-error.log</span><br><span class="line">pid-file=//home/wxl/date/mysql/data/mysqld.pid</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>启动mysql</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/mysqld_safe --user=mysql &amp;</span><br></pre></td></tr></table></figure>
@@ -516,6 +516,9 @@
 </div>
 
 
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=true&web_id=true"></script>
+  </div>
 
 
 
