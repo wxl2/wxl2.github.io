@@ -1,6 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>muduo-net库分析</title>
+    <url>/posts/5eab9dd9/</url>
+    <content><![CDATA[<hr>
+<p>详细见源码注释：<a href="https://github.com/wxl2/maya">https://github.com/wxl2/maya</a></p>
+<a id="more"></a>
+
+<h3 id="EventLoop"><a href="#EventLoop" class="headerlink" title="EventLoop"></a>EventLoop</h3><p>拥有EventLoop对象的线程为IO线程，负责事件循环，循环检测Poller返回的activeChannel列表事件到来，调用对应Channel的事件分发函数</p>
+<blockquote>
+<p>wakeup_唤醒:</p>
+<p>回调handRead将IO线程从poll阻塞中唤醒，wakeup_由wakeupChannel_管理,在EventLoop初始化时设置读回调函数并调用 enableReading函数将其添加进Poller的监听Channel列表内.一旦有时间则由Poller返回给EventLoop</p>
+</blockquote>
+<h3 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h3><blockquote>
+<p>维护一个文件描述符,并分发这个文件描述符的事件</p>
+</blockquote>
+<h3 id="Poller"><a href="#Poller" class="headerlink" title="Poller"></a>Poller</h3><blockquote>
+<p>监听文件描述符,并返回一个事件到来的Channel列表供EventLoop分发</p>
+<p>muduo net库中几乎所有类的构造函数都含有一个EventLoop指针,所有类函数的调用都由EventLoop线程调用即I/O线程</p>
+</blockquote>
+<h3 id="Epoller-amp-PollPoller"><a href="#Epoller-amp-PollPoller" class="headerlink" title="Epoller&amp;PollPoller"></a>Epoller&amp;PollPoller</h3><blockquote>
+<p>多路IO复用,分别由epoll和poll实现,作用就是监听事件并返回到来的事件,两个类都继承于纯虚类poller所以可通过poller指针调用</p>
+</blockquote>
+<h3 id="Acceptor"><a href="#Acceptor" class="headerlink" title="Acceptor"></a>Acceptor</h3><blockquote>
+<p>仅建立连接,不创建channel等对象,内部使用channel管理监听套接字,监听读事件,一旦有连接到来即有读事件到达,建立好一个tcp连接,将connfd通过回调传递给上层对象进行建立TcpConnection进行一系列操作.另外Acceptor还管理一个Sokcet对象,Socket对象封装了一系列sokcet操作,Accepetor通常有TcpServer类所拥有</p>
+</blockquote>
+<h3 id="TcpConnection"><a href="#TcpConnection" class="headerlink" title="TcpConnection"></a>TcpConnection</h3><blockquote>
+<p>负责管理Tcp连接,进行网络数据的收发</p>
+</blockquote>
+<h3 id="Connector"><a href="#Connector" class="headerlink" title="Connector"></a>Connector</h3><blockquote>
+<p>非阻塞调用,调用connect建立连接获得文件描述符,可以重连和断开连接.连接创建创建成功后会回调TcpClient传入的NewConnectionCallback</p>
+</blockquote>
+<h3 id="当有连接到来或者消息到来时"><a href="#当有连接到来或者消息到来时" class="headerlink" title="当有连接到来或者消息到来时"></a>当有连接到来或者消息到来时</h3><h4 id="以Http为例"><a href="#以Http为例" class="headerlink" title="以Http为例"></a>以Http为例</h4><p>从初始化开始,从上层开始逐渐往下层设置函数回调,</p>
+<p>首先是主函数函数</p>
+<blockquote>
+<p>在主函数中设置HttpServer的一个用户回调函数httpCallback_用于处理当有事件到来的其他操作</p>
+</blockquote>
+<p>HttpServer</p>
+<blockquote>
+<p>HttpServer中含有一个TcpServer成员,HttpServer在其构造函数内设置TcpServer所提供的用户回调函数,分别为</p>
+<p>ConnectionCallback:HttpServer::onConnection;onConnection中调用httpCallback_</p>
+<p>MessageCallback:HttpServer::onMessage</p>
+</blockquote>
+<p>TcpServer</p>
+<blockquote>
+<p>TcpServer设置Acceptor连接到来回调NewConnectionCallback:TcpServer::newConnection</p>
+</blockquote>
+<p>Acceptor</p>
+<blockquote>
+<p>Acceptor中有一个channel负责处理有连接事件到来,一旦有连接事件到来便回调TcpServer::newConnection</p>
+</blockquote>
+<p>TcpServer::newConnection</p>
+<blockquote>
+<p>创建一个TcpConnection,并将上层的回调函数设置给TcpConnection</p>
+<p>CloseCallback:TcpServer::removeConnection<br>ConnectionCallback:-&gt;TcpServer::ConnectionCallback:HttpServer::onConnection<br>MessageCallback:-&gt;TcpServer::MessageCallback:HttpServer::onMessage<br>WriteCompleteCallback:writeCompleteCallback_</p>
+<p>TcpConnection中有一个channel负责处理事件的分发</p>
+</blockquote>
+<p>返回数据</p>
+<blockquote>
+<p>HttpServer::onRequest()-&gt;TcpConnection::send-&gt;TcpConnection::sendInLoop-&gt;::write()写回http客户端</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>开源代码</category>
+      </categories>
+      <tags>
+        <tag>Cpp</tag>
+        <tag>muduo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>MySQL中文乱码问题</title>
     <url>/posts/1490c64f/</url>
     <content><![CDATA[<p>关于MySQL中文字符乱码问题十分常见,多出现于windwos客户端编程,这里使用Linux还原出各种乱码场景并说出如何解决.</p>
