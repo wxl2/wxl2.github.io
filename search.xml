@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Cmake基本语法及使用</title>
+    <url>/posts/f57b4ca7/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
     <title>muduo-net库分析</title>
     <url>/posts/5eab9dd9/</url>
-    <content><![CDATA[<hr>
-<p>详细见源码注释：<a href="https://github.com/wxl2/maya">https://github.com/wxl2/maya</a></p>
+    <content><![CDATA[<p>详细见源码注释：<a href="https://github.com/wxl2/maya">https://github.com/wxl2/maya</a></p>
 <a id="more"></a>
 
 <h3 id="EventLoop"><a href="#EventLoop" class="headerlink" title="EventLoop"></a>EventLoop</h3><p>拥有EventLoop对象的线程为IO线程，负责事件循环，循环检测Poller返回的activeChannel列表事件到来，调用对应Channel的事件分发函数</p>
@@ -18,6 +22,9 @@
 <h3 id="Poller"><a href="#Poller" class="headerlink" title="Poller"></a>Poller</h3><blockquote>
 <p>监听文件描述符,并返回一个事件到来的Channel列表供EventLoop分发</p>
 <p>muduo net库中几乎所有类的构造函数都含有一个EventLoop指针,所有类函数的调用都由EventLoop线程调用即I/O线程</p>
+</blockquote>
+<h3 id="EventLoop-Channel-Poller三者之间的调用关系"><a href="#EventLoop-Channel-Poller三者之间的调用关系" class="headerlink" title="EventLoop,Channel,Poller三者之间的调用关系"></a>EventLoop,Channel,Poller三者之间的调用关系</h3><blockquote>
+<p>最开始调用在EventLoop::updateChannel函数将channel添加到Poller的监听列表中,而后利用EventLoop::loop函数,将EventLoop成员变量activeChanels_地址传递给Poller,由Poller调用成员函数poll将监听的Channel列表中有事件到来的channel添加到传递进来的activeChanels_中,之后IO线程便可利用activeChanels_来处理到来的事件,其使用Channel::handleEvent函数来进行事件的分发并处理.</p>
 </blockquote>
 <h3 id="Epoller-amp-PollPoller"><a href="#Epoller-amp-PollPoller" class="headerlink" title="Epoller&amp;PollPoller"></a>Epoller&amp;PollPoller</h3><blockquote>
 <p>多路IO复用,分别由epoll和poll实现,作用就是监听事件并返回到来的事件,两个类都继承于纯虚类poller所以可通过poller指针调用</p>
@@ -847,7 +854,7 @@
 
 <h4 id="mysql-field-count"><a href="#mysql-field-count" class="headerlink" title="mysql_field_count"></a>mysql_field_count</h4><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">mysql_field_count</span><span class="params">(MYSQL *mysql)</span></span></span><br><span class="line"><span class="function">    <span class="comment">//返回结果集有多少列</span></span></span><br><span class="line"><span class="function">    <span class="keyword">uint32_t</span> fieldCount </span>= <span class="number">0</span>;</span><br><span class="line">	mysql_query(mysql,<span class="string">&quot;show databases&quot;</span>);</span><br><span class="line">    fieldCount = mysql_field_count(mysql);</span><br><span class="line">	<span class="comment">//fieldCount等于1</span></span><br></pre></td></tr></table></figure>
 
-<h4 id="mysql-fetch-fields"><a href="#mysql-fetch-fields" class="headerlink" title="mysql_fetch_fields"></a>mysql_fetch_fields</h4><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">MYSQL_FIELD *<span class="title">mysql_fetch_fields</span><span class="params">(MYSQL_RES *result)</span></span></span><br><span class="line"><span class="function">    <span class="comment">//返回MYSQL_FIELD 结果集的所有结构的数组。每个结构都为结果集的一列提供字段定义。及包括字段数据类型等</span></span></span><br><span class="line"><span class="function">    result </span>= mysql_store_result(mysql);</span><br><span class="line">    MYSQL_FIELD *fields = mysql_fetch_fields(result);</span><br></pre></td></tr></table></figure>
+<h4 id="mysql-fetch-fields"><a href="#mysql-fetch-fields" class="headerlink" title="mysql_fetch_fields"></a>mysql_fetch_fields</h4><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">MYSQL_FIELD *<span class="title">mysql_fetch_fields</span><span class="params">(MYSQL_RES *result)</span></span></span><br><span class="line"><span class="function">    <span class="comment">//返回MYSQL_FIELD 结果集的所有结构的数组。每个结构都为结果集的一列提供字段定义。及包括字段数据类型等,即获取表头</span></span></span><br><span class="line"><span class="function">    result </span>= mysql_store_result(mysql);</span><br><span class="line">    MYSQL_FIELD *fields = mysql_fetch_fields(result);</span><br></pre></td></tr></table></figure>
 
 <h4 id="mysql-fetch-row"><a href="#mysql-fetch-row" class="headerlink" title="mysql_fetch_row"></a>mysql_fetch_row</h4><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">MYSQL_ROW <span class="title">mysql_fetch_row</span><span class="params">(MYSQL_RES *result)</span></span></span><br><span class="line"><span class="function">    <span class="comment">//检索结果集的下一行</span></span></span><br><span class="line"><span class="function">    <span class="title">mysql_query</span><span class="params">(mysql,<span class="string">&quot;show databases&quot;</span>)</span></span>;</span><br><span class="line">    result = mysql_store_result(mysql);</span><br><span class="line">    row = mysql_fetch_row(result)</span><br><span class="line">    row为行指针，获取列的值使用row[i]</span><br></pre></td></tr></table></figure>
 
