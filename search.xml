@@ -3,7 +3,14 @@
   <entry>
     <title>Cmake基本语法及使用</title>
     <url>/posts/f57b4ca7/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p><img src="/images/45678.jpg" alt="Logger"></p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>tools</tag>
+      </tags>
   </entry>
   <entry>
     <title>muduo-net库分析</title>
