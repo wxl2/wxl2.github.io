@@ -1437,7 +1437,7 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim /etc/profile</span><br><span class="line"><span class="comment">#添加下面一行</span></span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:/usr/<span class="built_in">local</span>/mysql/bin</span><br><span class="line"><span class="built_in">source</span> /etc/profile <span class="comment">#使环境变量生效</span></span><br></pre></td></tr></table></figure>
 </li>
 <li><p>创建数据目录</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span></span><br><span class="line">mkdir data</span><br><span class="line">chown mysql.mysql data</span><br><span class="line">chmod 750 data</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/mysql</span><br><span class="line">mkdir data</span><br><span class="line">chown mysql.mysql data</span><br><span class="line">chmod 750 data</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>初始化mysql</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/mysql</span><br><span class="line">bin/mysqld --initialize  --user=mysql  --basedir=/usr/<span class="built_in">local</span>/mysql  --datadir=/usr/<span class="built_in">local</span>/mysql/data</span><br><span class="line"><span class="comment">#完成之后会有一个临时密码</span></span><br></pre></td></tr></table></figure>
